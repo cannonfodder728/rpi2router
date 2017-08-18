@@ -20,6 +20,7 @@ echo "2) No"
 read input
 if [ $input = "1" ];
 then
+	apt-get update
 	apt-get -y install sudo
 	sudo apt-get -y install raspi-config
 	sudo apt-get -y install file
