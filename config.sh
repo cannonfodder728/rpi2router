@@ -12,7 +12,23 @@ dhcpconffile='/etc/dhcp/dhcpd.conf'
 smbconffile='/etc/samba/smb.conf'
 rclocalfile="/etc/rc.local"
 now=$(date +"%m_%d_%Y_%H_%M_%S")
-		
+
+##########################################################################################################################################################
+#Resize SD CARD file
+apt-get -y install raspi-config
+
+echo "Resize SD Card? (Enter 1 or 2 or any other key to skip)"
+echo "1) Yes"
+echo "2) No"
+	
+read input
+if [ $input = "1" ];
+then
+	sudo raspi-config
+fi
+
+##########################################################################################################################################################
+#Install packages
 echo "Install needed packages? (ie sudo, build-essential, rpi-update, usbutils, wifi tools, usb tools, unzip, etc)? (Enter 1 or 2 or any other key to skip)"
 echo "1) Yes"
 echo "2) No"
@@ -22,7 +38,6 @@ if [ $input = "1" ];
 then
 	apt-get update
 	apt-get -y install sudo
-	sudo apt-get -y install raspi-config
 	sudo apt-get -y install file
 	sudo apt-get -y install build-essential
 	sudo apt-get -y install curl
@@ -45,18 +60,6 @@ then
 	#sudo apt-get install ntfs-3g
 
 	
-fi
-
-##########################################################################################################################################################
-#Resize SD CARD file
-echo "Resize SD Card? (Enter 1 or 2 or any other key to skip)"
-echo "1) Yes"
-echo "2) No"
-	
-read input
-if [ $input = "1" ];
-then
-	sudo raspi-config
 fi
 
 ##########################################################################################################################################################
