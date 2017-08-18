@@ -13,9 +13,11 @@ smbconffile='/etc/samba/smb.conf'
 rclocalfile="/etc/rc.local"
 now=$(date +"%m_%d_%Y_%H_%M_%S")
 
+apt-get -y install sudo
+	
+
 ##########################################################################################################################################################
 #Resize SD CARD file
-apt-get -y install raspi-config
 
 echo "Resize SD Card? (Enter 1 or 2 or any other key to skip)"
 echo "1) Yes"
@@ -24,8 +26,25 @@ echo "2) No"
 read input
 if [ $input = "1" ];
 then
+	sudo apt-get -y install raspi-config
 	sudo raspi-config
 fi
+
+##########################################################################################################################################################
+#Set Time
+
+echo "Set Time? (Enter 1 or 2 or any other key to skip)"
+echo "1) Yes"
+echo "2) No"
+	
+read input
+if [ $input = "1" ];
+then
+	sudo apt-get -y install dpkg-reconfigure
+	sudo dpkg-reconfigure tzdata
+fi
+
+
 
 ##########################################################################################################################################################
 #Install packages
@@ -37,7 +56,6 @@ read input
 if [ $input = "1" ];
 then
 	apt-get update
-	apt-get -y install sudo
 	sudo apt-get -y install file
 	sudo apt-get -y install build-essential
 	sudo apt-get -y install curl
@@ -55,6 +73,8 @@ then
 	sudo apt-get -y install unzip
 	sudo apt-get -y install dkms
 	sudo apt-get -y install bc
+	sudo apt-get -y install python
+
 	sudo apt-get install raspberrypi-kernel-headers
 fi
 
@@ -109,10 +129,8 @@ echo "2) No"
 read input
 if [ $input = "1" ];
 then
-	sudo apt-get -y install bc
 	sudo apt-get -y install libncurses5-dev
-	sudo apt-get -y install python
-
+	
 	# Get rpi-source
 	sudo wget https://raw.githubusercontent.com/notro/rpi-source/master/rpi-source -O /usr/bin/rpi-source
 
