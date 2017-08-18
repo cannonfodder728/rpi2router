@@ -42,6 +42,8 @@ then
 	sudo apt-get -y install dkms
 	sudo apt-get -y install bc
 	sudo apt-get install raspberrypi-kernel-headers
+	#sudo apt-get install exfat-fuse
+	#sudo apt-get install ntfs-3g
 
 	
 fi
@@ -641,14 +643,6 @@ then
 	# Remove automatically installed dependency packages
 	sudo apt-get -y autoremove
 
-
-	echo "Updating Pi"
-	#sudo apt-get update
-	sudo apt-get clean
-	sudo apt-get autoremove
-	#echo "Installing Exfat Support"
-	#echo "Upgrading Packages"
-	#sudo apt-get upgrade
 	echo "Done removing unnecessary packages and  updates"
 	#sudo reboot
 fi
