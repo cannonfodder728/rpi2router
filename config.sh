@@ -238,7 +238,14 @@ read input
 
 if [ $input = "1" ];
 then
-
+	echo "Configure Hostapd for 5G? (Enter 1 or 2 or any other key to skip)"
+	echo "1) Yes"
+	echo "2) No"
+	read input1
+	if [ $input1 = "1" ]; then
+		$fiveg=1
+	fi
+	
 	lsusb
 	echo "The usb devices above were detected, is your device a Realtek chip based device? (Enter 1 or 2)"
 	echo "1) Yes"
@@ -248,189 +255,63 @@ then
 	if [ $isRealTek = "1" ];
 	then 
 		#download and install Realtek hostapd
-        sudo apt-get install -y libnl-dev libssl-dev
+        	sudo apt-get install -y libnl-dev libssl-dev
         
-        # Remove any previous hostapd files
-        sudo apt-get purge -y hostapd
-        sudo rm /usr/local/bin/hostapd*
-        sudo rm /usr/bin/hostapd*
-        sudo rm /usr/sbin/hostapd*
-        
-        git clone https://github.com/cannonfodder728/hostapdrtl80211ac.git
-        cd hostapdrtl80211ac/hostapd
-        sudo make clean
-        sudo make
-        sudo make install
+       		# Remove any previous hostapd files
+		sudo apt-get purge -y hostapd
+		sudo rm /usr/local/bin/hostapd*
+		sudo rm /usr/bin/hostapd*
+		sudo rm /usr/sbin/hostapd*
+
+		git clone https://github.com/cannonfodder728/hostapdrtl80211ac.git
+		cd hostapdrtl80211ac/hostapd
+		sudo make clean
+		sudo make
+		sudo make install
+	fi
+		
 		
 		sudo cp $hostapdconffile /etc/hostapd/hostapd$now
 		sudo rm -f $hostapdconffile
-        
-		# WPA and WPA2 configuration
-        sudo echo "logger_syslog=-1">>$hostapdconffile
-        sudo echo "logger_syslog_level=2">>$hostapdconffile
-        sudo echo "logger_stdout=-1">>$hostapdconffile
-        sudo echo "logger_stdout_level=2">>$hostapdconffile
-
-        sudo echo "interface=$wlan_nic">>$hostapdconffile
-        sudo echo "driver=nl80211">>$hostapdconffile
-        sudo echo "ssid=$SSID">>$hostapdconffile
-        sudo echo "country_code=US">>$hostapdconffile
-        sudo echo "hw_mode=g">>$hostapdconffile
-        sudo echo "channel=11">>$hostapdconffile
-        sudo echo "macaddr_acl=0">>$hostapdconffile
-        sudo echo "auth_algs=1">>$hostapdconffile
-        sudo echo "ignore_broadcast_ssid=0">>$hostapdconffile
-        sudo echo "wpa=2">>$hostapdconffile
-        sudo echo "wpa_passphrase=$wifipass">>$hostapdconffile
-        sudo echo "wpa_key_mgmt=WPA-PSK">>$hostapdconffile
-        sudo echo "wpa_pairwise=CCMP">>$hostapdconffile
-        sudo echo "wpa_group_rekey=86400">>$hostapdconffile
-        sudo echo "ieee80211n=1">>$hostapdconffile
-        sudo echo "wme_enabled=1">>$hostapdconffile
-        sudo echo "ht_capab=[HT40-][SHORT-GI-20][SHORT-GI-40]">>$hostapdconffile
-
-	
-		#sudo echo "# Basic configuration">>$hostapdconffile
-
-		# sudo echo "interface=$wlan_nic">>$hostapdconffile
-		# sudo echo "ssid=$SSID">>$hostapdconffile
-		# sudo echo "channel=1">>$hostapdconffile
 		
-		# sudo echo "# WPA and WPA2 configuration">>$hostapdconffile
+		#Create Hostapd.conf file
+		# WPA and WPA2 configuration
+		sudo echo "logger_syslog=-1">>$hostapdconffile
+		sudo echo "logger_syslog_level=2">>$hostapdconffile
+		sudo echo "logger_stdout=-1">>$hostapdconffile
+		sudo echo "logger_stdout_level=2">>$hostapdconffile
 
-		# sudo echo "macaddr_acl=0">>$hostapdconffile
-		# sudo echo "auth_algs=1">>$hostapdconffile
-		# sudo echo "ignore_broadcast_ssid=0">>$hostapdconffile
-		# sudo echo "wpa=3">>$hostapdconffile
-		# sudo echo "wpa_passphrase=$wifipass">>$hostapdconffile
-		# sudo echo "wpa_key_mgmt=WPA-PSK">>$hostapdconffile
-		# sudo echo "wpa_pairwise=TKIP">>$hostapdconffile
-		# sudo echo "rsn_pairwise=CCMP">>$hostapdconffile
+		sudo echo "interface=$wlan_nic">>$hostapdconffile
+		sudo echo "driver=nl80211">>$hostapdconffile
+		sudo echo "ssid=$SSID">>$hostapdconffile
+		sudo echo "macaddr_acl=0">>$hostapdconffile
+		sudo echo "auth_algs=1">>$hostapdconffile
+		sudo echo "ignore_broadcast_ssid=0">>$hostapdconffile
+		sudo echo "wpa=2">>$hostapdconffile
+		sudo echo "wpa_passphrase=$wifipass">>$hostapdconffile
+		sudo echo "wpa_key_mgmt=WPA-PSK">>$hostapdconffile
+		sudo echo "wpa_pairwise=CCMP">>$hostapdconffile
+		sudo echo "wme_enabled=1">>$hostapdconffile
+		if [ $fiveg = "1" ];
+		then 
+			sudo echo "ieee80211ac=1">>$hostapdconffile
+			sudo echo "channel=52">>$hostapdconffile
+			sudo echo "hw_mode=a">>$hostapdconffile
+			#sudo echo "vht_oper_chwidth=1">>$hostapdconffile
+			#sudo echo "vht_capab=[MAX-MPDU-11454][RXLDPC][SHORT-GI-80][TX-STBC-2BY1][RX-STBC-1]">>$hostapdconffile
+			#sudo echo "vht_oper_centr_freq_seg0_idx=62">>$hostapdconffile
 
-		# sudo echo "# Hardware configuration">>$hostapdconffile
-
-		# sudo echo "driver=rtl871xdrv">>$hostapdconffile
-		# sudo echo "ieee80211n=1">>$hostapdconffile
-		# sudo echo "hw_mode=g">>$hostapdconffile
-		# sudo echo "device_name=RTL8192CU">>$hostapdconffile
-		# sudo echo "manufacturer=Realtek">>$hostapdconffile
-
+		else
+			sudo echo "channel=11">>$hostapdconffile
+			sudo echo "ieee80211n=1">>$hostapdconffile
+			sudo echo "ht_capab=[HT40-][SHORT-GI-20][SHORT-GI-40]">>$hostapdconffile
+		fi
 		sudo update-rc.d hostapd defaults
 		sudo update-rc.d hostapd enable
-
 		sudo service hostapd start
 
 		# echo "Done configuring hostapd.conf file"		
-	fi
 	
-	if [ $isRealTek = "2" ];
-	then
-		#download and install regular hostapd
-		sudo apt-get install hostapd
-		
-		sudo cp $hostapdconffile /etc/hostapd/hostapd$now
-		sudo rm -f $hostapdconffile
-        
-	    sudo echo "driver=nl80211">>$hostapdconffile
-        sudo echo "ssid=$SSID">>$hostapdconffile
-        sudo echo "country_code=US">>$hostapdconffile
-        sudo echo "hw_mode=g">>$hostapdconffile
-        sudo echo "channel=11">>$hostapdconffile
-        sudo echo "macaddr_acl=0">>$hostapdconffile
-        sudo echo "auth_algs=1">>$hostapdconffile
-        sudo echo "ignore_broadcast_ssid=0">>$hostapdconffile
-        sudo echo "wpa=2">>$hostapdconffile
-        sudo echo "wpa_passphrase=$wifipass">>$hostapdconffile
-        sudo echo "wpa_key_mgmt=WPA-PSK">>$hostapdconffile
-        sudo echo "wpa_pairwise=CCMP">>$hostapdconffile
-        sudo echo "wpa_group_rekey=86400">>$hostapdconffile
-        sudo echo "ieee80211n=1">>$hostapdconffile
-        sudo echo "wme_enabled=1">>$hostapdconffile
-        sudo echo "ht_capab=[HT40-][SHORT-GI-20][SHORT-GI-40]">>$hostapdconffile
-
-		#interface=wlan0
-		# ctrl_interface=/var/run/hostapd
-		# ssid=wifi
-		# channel=1
-		# auth_algs=1
-		# wpa=2
-		# wpa_passphrase=test#123test#123
-		# driver=nl80211
-		# #beacon_int=100
-		# hw_mode=g
-		# country_code=US
-		# ieee80211d=1
-
-		# ieee80211n=1
-		# #ieee80211ac=1
-		# wme_enabled=1
-		# wmm_enabled=1
-		# #force_ht40=1
-		# #wmm_enabled=1
-		# #wmm_ac_bk_cwmin=4
-		# #wmm_ac_bk_cwmax=10
-		# #wmm_ac_bk_aifs=7
-		# #wmm_ac_bk_txop_limit=0
-		# #wmm_ac_bk_acm=0
-		# #wmm_ac_be_aifs=3
-		# #wmm_ac_be_cwmin=4
-		# #wmm_ac_be_cwmax=10
-		# #wmm_ac_be_txop_limit=0
-		# #wmm_ac_be_acm=0
-		# #wmm_ac_vi_aifs=2
-		# #wmm_ac_vi_cwmin=3
-		# #wmm_ac_vi_cwmax=4
-		# #wmm_ac_vi_txop_limit=94
-		# #wmm_ac_vi_acm=0
-		# #wmm_ac_vo_aifs=#2
-		# #wmm_ac_vo_cwmin=2
-		# #wmm_ac_vo_cwmax=3
-		# #wmm_ac_vo_txop_limit=47
-		# #wmm_ac_vo_acm=0
-
-		# #tx_queue_data3_aifs=7
-		# #tx_queue_data3_cwmin=15
-		# #tx_queue_data3_cwmax=1023
-		# #tx_queue_data3_burst=0
-		# #tx_queue_data2_aifs=3
-		# #tx_queue_data2_cwmin=15
-		# #tx_queue_data2_cwmax=63
-		# #tx_queue_data2_burst=0
-		# #tx_queue_data1_aifs=1
-		# #tx_queue_data1_cwmin=7
-		# #tx_queue_data1_cwmax=15
-		# #tx_queue_data1_burst=3.0
-		# #tx_queue_data0_aifs=1
-		# #tx_queue_data0_cwmin=3
-		# #tx_queue_data0_cwmax=7
-		# #tx_queue_data0_burst=1.5
-
-		# ht_capab=[HT40+][SHORT-GI-40][RX-STBC1][DSSS_CCK-40]
-
-		# #ht_capab=[HT40+][SHORT-GI-40][RX-STBC2][DSSS_CK-40]
-
-		# #vht_oper_chwidth=1
-		# #vht_capab=[SHORT-GI-80]
-		# #vht_oper_centr_freq_seg0_idx=42
-		# #vht_capab=[SHORT-GI-80]
-		# #[SHORT-GI-160]
-
-		# #[VHT160-80PLUS80][MU-BEAMFORMER][MU-BEAMFORMEE][SU-BEAMFORMER][SU-BEAMFORMEE]
-
-		# wpa_key_mgmt=WPA-PSK
-		# #wpa_pairwise=CCMP
-		# rsn_pairwise=CCMP
-		# max_num_sta=8
-		# wpa_group_rekey=86400
-
-		sudo update-rc.d hostapd enable
-		
-		sudo update-rc.d hostapd defaults
-		sudo update-rc.d hostapd enable
-
-		sudo service hostapd start
-
-	fi
 fi
 ##########################################################################################################################################################
 #configure DHCP Server
@@ -771,10 +652,6 @@ then
 	echo "Done removing unnecessary packages and  updates"
 	#sudo reboot
 fi
-
-
-
-
 
 ##########################################################################################################################################################
 #Finish up
