@@ -56,10 +56,6 @@ then
 	sudo apt-get -y install dkms
 	sudo apt-get -y install bc
 	sudo apt-get install raspberrypi-kernel-headers
-	#sudo apt-get install exfat-fuse
-	#sudo apt-get install ntfs-3g
-
-	
 fi
 
 ##########################################################################################################################################################
@@ -83,9 +79,7 @@ echo "2) No"
 read input
 if [ $input = "1" ];
 then
-
         sudo echo "blacklist brcmfmac" >> /etc/modprobe.d/brcmfmac.conf
-
 fi
 
 ############################################################################################################################################################
@@ -165,7 +159,6 @@ echo "2) DHCP"
 read input
 if [ $input = "1" ];
 then
-                
 	echo "Config WLAN using Static"
 	echo "Enter Static IP Address for WLAN"
 	read wlanstaticip
@@ -410,7 +403,6 @@ if [ $changesshport = "1" ]; then
 	
 	sudo rm /etc/ssh/ssh_host_*
 	sudo dpkg-reconfigure openssh-server
-
 fi
 
 ##########################################################################################################################################################
