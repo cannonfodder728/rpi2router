@@ -6,15 +6,13 @@
 #https://github.com/lostincynicism/hostapd-rtl8188/archive/master.zip
 #https://github.com/diederikdehaas/rtl8812AU/archive/driver-4.3.22-beta.zip
 
-
 hostapdconffile='/etc/hostapd/hostapd.conf'
 interfaces_file='/etc/network/interfaces'
 dhcpconffile='/etc/dhcp/dhcpd.conf'
 smbconffile='/etc/samba/smb.conf'
 rclocalfile="/etc/rc.local"
 now=$(date +"%m_%d_%Y_%H_%M_%S")
-	
-	
+		
 echo "Install needed packages? (ie sudo, build-essential, rpi-update, usbutils, wifi tools, usb tools, unzip, etc)? (Enter 1 or 2 or any other key to skip)"
 echo "1) Yes"
 echo "2) No"
@@ -47,8 +45,8 @@ then
 
 	
 fi
-##########################################################################################################################################################
 
+##########################################################################################################################################################
 #Resize SD CARD file
 echo "Resize SD Card? (Enter 1 or 2 or any other key to skip)"
 echo "1) Yes"
@@ -59,8 +57,8 @@ if [ $input = "1" ];
 then
 	sudo raspi-config
 fi
-##########################################################################################################################################################
 
+##########################################################################################################################################################
 #Update Pi
 echo "Update Raspberry Pi? (Enter 1 or 2 or any other key to skip)"
 echo "1) Yes"
@@ -73,7 +71,6 @@ then
 fi
 
 ############################################################################################################################################################
-
 #Disable Onboard WiFi 
 echo "If you're running RPI3 do you want to disable onboard WIFI? (Enter 1 or 2 or any other key to skip)"
 echo "1) Yes"
@@ -88,7 +85,6 @@ then
 fi
 
 ############################################################################################################################################################
-
 #Install WiFi Drivers
 echo "Attempt to install Wifi Drivers? (Enter 1 or 2 or any other key to skip)"
 echo "1) Yes"
@@ -103,13 +99,10 @@ then
     sudo install-wifi
     echo "auto wlan0">>$interfaces_file
     echo "iface wlan0 inet dhcp">>$interfaces_file
-    sudo ifup wlan0
-
-    
+    sudo ifup wlan0    
 fi
 
 ############################################################################################################################################################
-
 #Install headers Pi
 echo "Install headers? (Enter 1 or 2 or any other key to skip)"
 echo "1) Yes"
@@ -134,7 +127,6 @@ then
 	# Get the kernel files thingies.
 	rpi-source
 fi
-##########################################################################################################################################################
 
 ##########################################################################################################################################################
 #List Network Interfaces and input wired and wireless nic device names
@@ -144,7 +136,6 @@ echo "Enter Wired interface which will be connected to Internet"
 read wired_nic
 echo "Enter WLAN interface which will be used for AP"
 read wlan_nic
-
 
 ##########################################################################################################################################################
 #Configure Interfaces file
@@ -160,6 +151,7 @@ then
 	echo "auto lo">>$interfaces_file
 	echo "iface lo inet loopback">>$interfaces_file
 fi
+
 ##########################################################################################################################################################
 #configure wireless nic appropriately
 echo "How will wireless connection be configured? (Note: Hostapd entry will point to /etc/hostapd/hostapd.conf) (Enter 1 or 2 or any other key to skip)"
@@ -270,51 +262,49 @@ then
 		sudo make clean
 		sudo make
 		sudo make install
+	fi		
+	sudo cp $hostapdconffile /etc/hostapd/hostapd$now
+	sudo rm -f $hostapdconffile
+		
+	#Create Hostapd.conf file
+	# WPA and WPA2 configuration
+	sudo echo "logger_syslog=-1">>$hostapdconffile
+	sudo echo "logger_syslog_level=2">>$hostapdconffile
+	sudo echo "logger_stdout=-1">>$hostapdconffile
+	sudo echo "logger_stdout_level=2">>$hostapdconffile
+
+	sudo echo "interface=$wlan_nic">>$hostapdconffile
+	sudo echo "driver=nl80211">>$hostapdconffile
+	sudo echo "ssid=$SSID">>$hostapdconffile
+	sudo echo "macaddr_acl=0">>$hostapdconffile
+	sudo echo "auth_algs=1">>$hostapdconffile
+	sudo echo "ignore_broadcast_ssid=0">>$hostapdconffile
+	sudo echo "wpa=2">>$hostapdconffile
+	sudo echo "wpa_passphrase=$wifipass">>$hostapdconffile
+	sudo echo "wpa_key_mgmt=WPA-PSK">>$hostapdconffile
+	sudo echo "wpa_pairwise=CCMP">>$hostapdconffile
+	sudo echo "wme_enabled=1">>$hostapdconffile
+	if [ $fiveg = "1" ];
+	then 
+		sudo echo "ieee80211ac=1">>$hostapdconffile
+		sudo echo "channel=52">>$hostapdconffile
+		sudo echo "hw_mode=a">>$hostapdconffile
+		#sudo echo "vht_oper_chwidth=1">>$hostapdconffile
+		#sudo echo "vht_capab=[MAX-MPDU-11454][RXLDPC][SHORT-GI-80][TX-STBC-2BY1][RX-STBC-1]">>$hostapdconffile
+		#sudo echo "vht_oper_centr_freq_seg0_idx=62">>$hostapdconffile
+	else
+		sudo echo "channel=11">>$hostapdconffile
+		sudo echo "ieee80211n=1">>$hostapdconffile
+		sudo echo "ht_capab=[HT40-][SHORT-GI-20][SHORT-GI-40]">>$hostapdconffile
 	fi
-		
-		
-		sudo cp $hostapdconffile /etc/hostapd/hostapd$now
-		sudo rm -f $hostapdconffile
-		
-		#Create Hostapd.conf file
-		# WPA and WPA2 configuration
-		sudo echo "logger_syslog=-1">>$hostapdconffile
-		sudo echo "logger_syslog_level=2">>$hostapdconffile
-		sudo echo "logger_stdout=-1">>$hostapdconffile
-		sudo echo "logger_stdout_level=2">>$hostapdconffile
+	echo "Done configuring hostapd.conf file"		
 
-		sudo echo "interface=$wlan_nic">>$hostapdconffile
-		sudo echo "driver=nl80211">>$hostapdconffile
-		sudo echo "ssid=$SSID">>$hostapdconffile
-		sudo echo "macaddr_acl=0">>$hostapdconffile
-		sudo echo "auth_algs=1">>$hostapdconffile
-		sudo echo "ignore_broadcast_ssid=0">>$hostapdconffile
-		sudo echo "wpa=2">>$hostapdconffile
-		sudo echo "wpa_passphrase=$wifipass">>$hostapdconffile
-		sudo echo "wpa_key_mgmt=WPA-PSK">>$hostapdconffile
-		sudo echo "wpa_pairwise=CCMP">>$hostapdconffile
-		sudo echo "wme_enabled=1">>$hostapdconffile
-		if [ $fiveg = "1" ];
-		then 
-			sudo echo "ieee80211ac=1">>$hostapdconffile
-			sudo echo "channel=52">>$hostapdconffile
-			sudo echo "hw_mode=a">>$hostapdconffile
-			#sudo echo "vht_oper_chwidth=1">>$hostapdconffile
-			#sudo echo "vht_capab=[MAX-MPDU-11454][RXLDPC][SHORT-GI-80][TX-STBC-2BY1][RX-STBC-1]">>$hostapdconffile
-			#sudo echo "vht_oper_centr_freq_seg0_idx=62">>$hostapdconffile
-
-		else
-			sudo echo "channel=11">>$hostapdconffile
-			sudo echo "ieee80211n=1">>$hostapdconffile
-			sudo echo "ht_capab=[HT40-][SHORT-GI-20][SHORT-GI-40]">>$hostapdconffile
-		fi
-		sudo update-rc.d hostapd defaults
-		sudo update-rc.d hostapd enable
-		sudo service hostapd start
-
-		# echo "Done configuring hostapd.conf file"		
-	
+	sudo update-rc.d hostapd defaults
+	sudo update-rc.d hostapd enable
+	sudo service hostapd start
+	echo "Done configuring hostapd"		
 fi
+
 ##########################################################################################################################################################
 #configure DHCP Server
 echo "Configure DHCP Server? (Enter 1 or 2 or any other key to skip)"
@@ -366,6 +356,7 @@ read input
 if [ $input = "1" ]; then
 	dpkg-reconfigure tzdata
 fi
+
 ##########################################################################################################################################################
 #Configure users
 echo "Would you like to a new user?"
@@ -391,7 +382,6 @@ if [ $input = "1" ]; then
 	fi
 fi
 
-
 ##########################################################################################################################################################
 #Configure sshd including new port
 
@@ -409,14 +399,14 @@ if [ $changesshport = "1" ]; then
         sudo sed -i 's/IgnoreRhosts no/IgnoreRhosts yes/g' /etc/ssh/sshd_config
         sudo sed -i 's/HostbasedAuthentication yes/HostbasedAuthentication no/g' /etc/ssh/sshd_config
         sudo sed -i 's/PermitEmptyPasswords yes/PermitEmptyPasswords no/g' /etc/ssh/sshd_config
-
-        
+      
         echo "Changed SSH Port"
-		sudo rm /etc/ssh/ssh_host_*
-		sudo dpkg-reconfigure openssh-server
+	echo "Reconfiguring OpenSSH Keys"
+	
+	sudo rm /etc/ssh/ssh_host_*
+	sudo dpkg-reconfigure openssh-server
 
 fi
-
 
 ##########################################################################################################################################################
 #install samba
@@ -426,8 +416,9 @@ echo "2) No"
 read samba
 if [ $samba = "1" ];
 then
-	echo "Installing ExFat support"
+	echo "Installing ExFat and NTFS support"
 	sudo apt-get install exfat-utils -y
+	sudo apt-get install ntfs-3g -y
 
 	sudo apt-get install samba samba-common-bin
 	echo "Please enter path to folder you would like to share (ie path to folder where external drive is mounted)"
@@ -468,7 +459,6 @@ then
 	sudo echo "map to guest = bad user">> $smbconffile
 	sudo smbpasswd -a pi
 	sudo echo "Done setting up samba"
-
 fi
 
 ##########################################################################################################################################################
@@ -479,13 +469,10 @@ echo "2) No"
 read input
 if [ $input = "1" ];
 then
-
 	echo "setup firewall rules appropriately and startup script"
-
 	sudo sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
-
+	
 	sudo cp $rclocalfile /etc/rc.local$now
-
 	sudo rm -f $rclocalfile
 	touch $rclocalfile 
 	sudo sed -i 's/#exit 0/#exit 0/g' $rclocalfile
@@ -495,7 +482,7 @@ then
 	echo "sudo ifdown $wlan_nic">>$rclocalfile
 	echo "sudo ifup $wlan_nic">>$rclocalfile
 	echo "sleep 5">>$rclocalfile
-    echo "ifconfig $wlan_nic | grep -q $wlan_nic && echo 'found $wlan_nic nothing to do'> /dev/kmsg || sudo install-wifi ">>$rclocalfile
+    	echo "ifconfig $wlan_nic | grep -q $wlan_nic && echo 'found $wlan_nic nothing to do'> /dev/kmsg || sudo install-wifi ">>$rclocalfile
 	
 	echo "service hostapd restart">>$rclocalfile
 	echo "sleep 5">>$rclocalfile
@@ -520,6 +507,7 @@ then
 
 	echo "Done setting up startup script with Firewall Rules"
 fi
+
 ##########################################################################################################################################################
 #Change Password
 echo "Would you like to change root password?"
@@ -534,19 +522,16 @@ then
 	echo "Re-Enter new password"
 	read  S2
 	if [ "$S1" = "$S2" ];
-    then
+    	then
 		echo "$myvariable:$S1" | chpasswd
 		echo "Password changed"
-	
 	else
 		echo "Passwords didnt match, password NOT changed"
 	fi
-	
 fi
 
 ##########################################################################################################################################################
 #Remove unnecessary packages
-
 echo "Remove Unnecessary packages? (Enter 1 or 2)"
 echo "1) Yes"
 echo "2) No"
@@ -649,7 +634,6 @@ fi
 
 ##########################################################################################################################################################
 #Finish up
-
 echo "Config complete, would you like to reboot?"
 echo "1) Yes"
 echo "2) No"
