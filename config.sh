@@ -286,6 +286,7 @@ then
 	sudo echo "wme_enabled=1">>$hostapdconffile
 	if [ $fiveg = "1" ];
 	then 
+		sudo echo "ieee80211n=1">>$hostapdconffile
 		sudo echo "ieee80211ac=1">>$hostapdconffile
 		sudo echo "channel=52">>$hostapdconffile
 		sudo echo "hw_mode=a">>$hostapdconffile
