@@ -272,8 +272,9 @@ then
 		sudo rm /usr/bin/hostapd*
 		sudo rm /usr/sbin/hostapd*
 
-		git clone https://github.com/cannonfodder728/hostapdrtl80211ac.git
-		cd hostapdrtl80211ac/hostapd
+		wget https://github.com/cannonfodder728/hostapdrtl80211ac/archive/master.zip
+		unzip master.zip
+		cd hostapdrtl80211ac-master/hostapd
 		sudo make clean
 		sudo make
 		sudo make install
@@ -282,6 +283,9 @@ then
 	sudo mkdir /etc/hostapd
 	sudo cp hostapdrtl80211ac/hostapd_defaults /etc/default/hostapd
 	sudo cp hostapdrtl80211ac/hostapd_initd /etc/init.d/hostapd
+	sudo chmod +x /etc/default/hostapd
+	sudo chmod +x /etc/init.d/hostapd
+	
 	sudo cp $hostapdconffile /etc/hostapd/hostapd$now
 	sudo rm -f $hostapdconffile
 		
@@ -315,7 +319,7 @@ then
 	else
 		sudo echo "channel=11">>$hostapdconffile
 		sudo echo "ieee80211n=1">>$hostapdconffile
-		sudo echo "ht_capab=[HT40-][SHORT-GI-20][SHORT-GI-40]">>$hostapdconffile
+		sudo echo "ht_capab=[HT40][SHORT-GI-20][SHORT-GI-40]">>$hostapdconffile
 	fi
 	echo "Done configuring hostapd.conf file"		
 
