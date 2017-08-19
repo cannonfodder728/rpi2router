@@ -280,8 +280,8 @@ then
 		sleep 5
 	fi		
 	sudo mkdir /etc/hostapd
-	sudo cp hostapd_defaults /etc/defaults/hostapd
-	sudo cp hostapd_initd /etc/init.d/hostapd
+	sudo cp hostapdrtl80211ac/hostapd_defaults /etc/default/hostapd
+	sudo cp hostapdrtl80211ac/hostapd_initd /etc/init.d/hostapd
 	sudo cp $hostapdconffile /etc/hostapd/hostapd$now
 	sudo rm -f $hostapdconffile
 		
