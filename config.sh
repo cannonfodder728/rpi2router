@@ -279,13 +279,16 @@ then
 		sudo make
 		sudo make install
 		sleep 5
+		sudo cp /usr/local/bin/hostapd /usr/sbin/hostapd
+		sudo mkdir /etc/hostapd
+
+		sudo cp hostapdrtl80211ac-master/hostapd_default /etc/default/hostapd
+		sudo cp hostapdrtl80211ac-master/hostapd_initd /etc/init.d/hostapd
+		sudo chmod +x /etc/default/hostapd
+		sudo chmod +x /etc/init.d/hostapd
+	else:
+		sudo apt-get -y install hostapd
 	fi
-	sudo mkdir /etc/hostapd
-	
-	sudo cp hostapdrtl80211ac-master/hostapd_default /etc/default/hostapd
-	sudo cp hostapdrtl80211ac-master/hostapd_initd /etc/init.d/hostapd
-	sudo chmod +x /etc/default/hostapd
-	sudo chmod +x /etc/init.d/hostapd
 	
 	if [ -z "$now" ];
 	then
