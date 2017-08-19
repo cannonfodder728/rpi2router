@@ -252,7 +252,7 @@ then
 	echo "2) No"
 	read input1
 	if [ $input1 = "1" ]; then
-		$fiveg=1
+		$fiveg="1"
 	fi
 	
 	lsusb
@@ -262,7 +262,7 @@ then
 	read isRealTek
 
 	if [ $isRealTek = "1" ];
-	then 
+	then
 		#download and install Realtek hostapd
         	sudo apt-get install -y libnl-dev libssl-dev
         
@@ -277,7 +277,9 @@ then
 		sudo make clean
 		sudo make
 		sudo make install
+		sleep 5
 	fi		
+	sudo mkdir /etc/hostapd
 	sudo cp $hostapdconffile /etc/hostapd/hostapd$now
 	sudo rm -f $hostapdconffile
 		
