@@ -74,7 +74,7 @@ then
 	sudo apt-get -y install dkms
 	sudo apt-get -y install bc
 	sudo apt-get -y install python
-	sudo apt-get -y libnl-route-3-200
+	sudo apt-get -y install libnl-route-3-200
 	sudo apt-get -y install raspberrypi-kernel-headers
 fi
 
@@ -238,13 +238,13 @@ echo "Please enter what you would like your SSID to be?"
 read SSID
 echo "Please enter what you desired WLAN password?"
 read wifipass
-	
+
 echo "Configure Wireless connection (Hostapd will be installed and configured)? (Enter 1 or 2 or any other key to skip)"
 echo "1) Yes"
 echo "2) No"
 
 read input
-
+fiveg=0
 if [ $input = "1" ];
 then
 	echo "Configure Hostapd for 5G? (Enter 1 or 2 or any other key to skip)"
@@ -281,10 +281,35 @@ then
 		sleep 5
 	fi		
 	sudo mkdir /etc/hostapd
-	sudo cp hostapdrtl80211ac/hostapd_default /etc/default/hostapd
-	sudo cp hostapdrtl80211ac/hostapd_initd /etc/init.d/hostapd
+	
+	
+	sudo cp hostapdrtl80211ac-master/hostapd_default /etc/default/hostapd
+	sudo cp hostapdrtl80211ac-master/hostapd_initd /etc/init.d/hostapd
 	sudo chmod +x /etc/default/hostapd
 	sudo chmod +x /etc/init.d/hostapd
+	
+	if [ -z "$now" ];
+	then
+      		now=$(date +"%m_%d_%Y_%H_%M_%S")
+      		echo "now  variable not seting using $now"
+	fi	
+	
+	if [ -z "$hostapdconffile" ];
+	then
+      		$hostapdconffile="/etc/hostapd/hostapd.conf"
+      		echo "hostapd config variable not seting using $hostapdconffile"
+	fi	
+	if [ -z "$SSID" ];
+	then
+		$SSID="wifi"
+	      	echo "SSID variable not seting using $SSID"
+	fi	
+	if [ -z "$wlan_nic" ];
+	then
+	      	$wlan_nic="wlan0"
+	      	echo "wlan nic variable not seting using $wlan_nic"
+	fi	
+
 	
 	sudo cp $hostapdconffile /etc/hostapd/hostapd$now
 	sudo rm -f $hostapdconffile
@@ -369,16 +394,6 @@ then
 
 	sudo update-rc.d isc-dhcp-server enable
 	sudo service isc-dhcp-server start
-fi
-
-##########################################################################################################################################################
-#Configure time zone
-echo "Would you like to change time zone?"
-echo "1) Yes"
-echo "2) No"
-read input
-if [ $input = "1" ]; then
-	dpkg-reconfigure tzdata
 fi
 
 ##########################################################################################################################################################
