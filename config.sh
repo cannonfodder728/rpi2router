@@ -74,8 +74,8 @@ then
 	sudo apt-get -y install dkms
 	sudo apt-get -y install bc
 	sudo apt-get -y install python
-
-	sudo apt-get install raspberrypi-kernel-headers
+	sudo apt-get -y libnl-route-3-200
+	sudo apt-get -y install raspberrypi-kernel-headers
 fi
 
 ##########################################################################################################################################################
