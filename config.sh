@@ -286,6 +286,9 @@ then
 		sudo cp hostapdrtl80211ac-master/hostapd_initd /etc/init.d/hostapd
 		sudo chmod +x /etc/default/hostapd
 		sudo chmod +x /etc/init.d/hostapd
+		
+		sudo chown root:root /etc/default/hostapd
+		sudo chown root:root /etc/init.d/hostapd
 	else:
 		sudo apt-get -y install hostapd
 	fi
