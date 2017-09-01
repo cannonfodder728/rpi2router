@@ -276,6 +276,10 @@ then
 		#unzip master.zip
 		#cd hostapdrtl80211ac-master/hostapd
 		apt-get install git build-essential fakeroot devscripts debhelper libnl-dev libssl-dev
+		wget https://github.com/jekader/hostapd-rtl/archive/master.zip
+		unzip master.zip
+		cd hostapd-rtl-master
+		
 		sudo make clean
 		sudo make
 		sudo make install
