@@ -279,7 +279,7 @@ then
 		wget https://github.com/jekader/hostapd-rtl/archive/master.zip
 		unzip master.zip
 		cd hostapd-rtl-master
-		
+		echo "CONFIG_IEEE80211AC=y" >> hostapd/.config
 		sudo make clean
 		sudo make
 		sudo make install
