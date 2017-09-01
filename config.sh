@@ -272,9 +272,10 @@ then
 		sudo rm /usr/bin/hostapd*
 		sudo rm /usr/sbin/hostapd*
 
-		wget https://github.com/cannonfodder728/hostapdrtl80211ac/archive/master.zip
-		unzip master.zip
-		cd hostapdrtl80211ac-master/hostapd
+		#wget https://github.com/cannonfodder728/hostapdrtl80211ac/archive/master.zip
+		#unzip master.zip
+		#cd hostapdrtl80211ac-master/hostapd
+		apt-get install git build-essential fakeroot devscripts debhelper libnl-dev libssl-dev
 		sudo make clean
 		sudo make
 		sudo make install
@@ -327,7 +328,15 @@ then
 	sudo echo "logger_stdout_level=2">>$hostapdconffile
 
 	sudo echo "interface=$wlan_nic">>$hostapdconffile
-	sudo echo "driver=nl80211">>$hostapdconffile
+	if [ $isRealTek = "1" ];
+	then
+	
+		sudo echo "driver=rtl871xdrv">>$hostapdconffile
+	else
+	
+		sudo echo "driver=nl80211">>$hostapdconffile
+	
+	fi
 	sudo echo "ssid=$SSID">>$hostapdconffile
 	sudo echo "macaddr_acl=0">>$hostapdconffile
 	sudo echo "auth_algs=1">>$hostapdconffile
@@ -349,7 +358,7 @@ then
 	else
 		sudo echo "channel=11">>$hostapdconffile
 		sudo echo "ieee80211n=1">>$hostapdconffile
-		sudo echo "ht_capab=[HT40][SHORT-GI-20][SHORT-GI-40]">>$hostapdconffile
+		sudo echo "ht_capab=[HT40]">>$hostapdconffile
 	fi
 	echo "Done configuring hostapd.conf file"
 
