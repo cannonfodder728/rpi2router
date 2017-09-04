@@ -1,3 +1,9 @@
+
+Hostapd 2.6 for Realtek WiFi Cards
+1) Includes NoScan Patch
+2) RTL patch for hostapd 2.6 applied
+3) 80211AC enabled in .config file
+
 wpa_supplicant and hostapd
 --------------------------
 
