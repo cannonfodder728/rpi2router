@@ -1,32 +1,8 @@
 
 Hostapd 2.6 for Realtek WiFi Cards
-1) Includes NoScan Patch
-2) RTL patch for hostapd 2.6 applied
+1) Includes 300 NoScan Patch (https://github.com/pritambaral/hostapd-rtl871xdrv)
+2) RTL patch (rtlxdrv.patch) for hostapd 2.6 applied (https://github.com/pritambaral/hostapd-rtl871xdrv)
 3) 80211AC enabled in .config file
-
-wpa_supplicant and hostapd
---------------------------
-
-Copyright (c) 2002-2015, Jouni Malinen <j@w1.fi> and contributors
-All Rights Reserved.
-
-These programs are licensed under the BSD license (the one with
-advertisement clause removed).
-
-If you are submitting changes to the project, please see CONTRIBUTIONS
-file for more instructions.
-
-
-This package may include either wpa_supplicant, hostapd, or both. See
-README file respective subdirectories (wpa_supplicant/README or
-hostapd/README) for more details.
-
-Source code files were moved around in v0.6.x releases and compared to
-earlier releases, the programs are now built by first going to a
-subdirectory (wpa_supplicant or hostapd) and creating build
-configuration (.config) and running 'make' there (for Linux/BSD/cygwin
-builds).
-
 
 License
 -------
