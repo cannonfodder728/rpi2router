@@ -273,13 +273,15 @@ then
 		sudo rm /usr/sbin/hostapd*
 
 		wget https://github.com/cannonfodder728/hostapdrtl80211ac/archive/master.zip
+		unzip master.zip
+		
 		cd hostapdrtl80211ac-master/hostapd
+		
 		#apt-get install git build-essential fakeroot devscripts debhelper libnl-dev libssl-dev
 		#wget https://github.com/jekader/hostapd-rtl/archive/master.zip
 		#echo "CONFIG_IEEE80211AC=y" >> hostapd/.config
+		#cd hostapd-rtl-master
 		
-		unzip master.zip
-		cd hostapd-rtl-master
 		sudo make clean
 		sudo make
 		sudo make install
