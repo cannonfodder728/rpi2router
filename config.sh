@@ -686,6 +686,19 @@ then
 fi
 
 ##########################################################################################################################################################
+#Clear logs
+echo "Would you like to clear logs?"
+echo "1) Yes"
+echo "2) No"
+read clearlogs
+if [ $clearlogs = "1" ];
+then
+	for logs in `find /var/log -type f`; do > $logs; done
+	history -cw
+fi
+
+
+##########################################################################################################################################################
 #Finish up
 echo "Config complete, would you like to reboot?"
 echo "1) Yes"
@@ -693,9 +706,9 @@ echo "2) No"
 read reboot
 if [ $reboot = "1" ];
 then
-	echo "Updating and Upgrading Packages"
-	sudo apt-get update
-	sudo apt-get upgrade
+	#echo "Updating and Upgrading Packages"
+	#sudo apt-get update
+	#sudo apt-get upgrade
 	echo "Rebooting now!"
 	sudo reboot
 else
