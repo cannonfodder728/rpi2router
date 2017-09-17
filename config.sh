@@ -63,7 +63,6 @@ then
 	sudo apt-get -y install iptables
 	sudo apt-get -y install nano
 	sudo apt-get -y install wireless-tools 
-	sudo apt-get -y install rpi-update
 	sudo apt-get -y install libnl-3-dev
 	sudo apt-get -y install libnl-genl-3-dev
 	sudo apt-get -y install libnl-dev
