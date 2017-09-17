@@ -56,21 +56,7 @@ read input
 if [ $input = "1" ];
 then
 	apt-get update
-	sudo apt-get -y install file
-	sudo apt-get -y install build-essential
-	sudo apt-get -y install curl
-	sudo apt-get -y install usbutils
-	sudo apt-get -y install iptables
-	sudo apt-get -y install nano
-	sudo apt-get -y install wireless-tools 
-	sudo apt-get -y install iw
-	sudo apt-get -y install git
-	sudo apt-get -y install unzip
-	sudo apt-get -y install dkms
-	sudo apt-get -y install bc
-	sudo apt-get -y install python
-	sudo apt-get -y install raspberrypi-kernel-headers
-	sudp apt-get -y install rpi-update
+	sudo apt-get -y install file build-essential curl usbutils iptables nano wireless-tools iw git unzip dkms bc python raspberrypi-kernel-headers rpi-update
 fi
 
 ##########################################################################################################################################################
@@ -695,6 +681,7 @@ if [ $clearlogs = "1" ];
 then
 	for logs in `find /var/log -type f`; do > $logs; done
 	history -cw
+	sudo cat /dev/null > .bash_history
 fi
 
 
