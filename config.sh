@@ -291,7 +291,7 @@ then
 		
 		sudo chown root:root /etc/default/hostapd
 		sudo chown root:root /etc/init.d/hostapd
-	else:
+	else
 		sudo apt-get -y install hostapd
 	fi
 	
