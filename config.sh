@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 hostapdconffile="/etc/hostapd/hostapd.conf"
 interfaces_file="/etc/network/interfaces"
 dhcpconffile="/etc/dhcp/dhcpd.conf"
@@ -9,10 +8,8 @@ now=$(date +"%m_%d_%Y_%H_%M_%S")
 
 apt-get -y install sudo
 
-
 ##########################################################################################################################################################
 #Resize SD CARD file
-
 echo "Resize SD Card? (Enter 1 or 2 or any other key to skip)"
 echo "1) Yes"
 echo "2) No"
@@ -26,7 +23,6 @@ fi
 
 ##########################################################################################################################################################
 #Set Time
-
 echo "Set Time? (Enter 1 or 2 or any other key to skip)"
 echo "1) Yes"
 echo "2) No"
@@ -80,7 +76,6 @@ then
  
 fi
 
-
 ############################################################################################################################################################
 #Install headers Pi
 echo "Install headers? (Enter 1 or 2 or any other key to skip)"
@@ -118,7 +113,6 @@ echo "Enter Wired interface which will be used for Internal Network (Press Enter
 read wired_int_nic
 
 #read -p "Enter up to two interfaces which will be added to bridge for internal network (if you have wireless and wired enter both those interfaces with spaces in between)" intnic1 intnic2
-
 
 ##########################################################################################################################################################
 #Configure Interfaces file
@@ -290,20 +284,20 @@ then
 	
 	if [ -z "$now" ];
 	then
-      	now=$(date +"%m_%d_%Y_%H_%M_%S")
-      	echo "now  variable not seting using $now"
+      		now=$(date +"%m_%d_%Y_%H_%M_%S")
+      		echo "now  variable not seting using $now"
 	fi
 	
 	if [ -z "$hostapdconffile" ];
 	then
-      	hostapdconffile="/etc/hostapd/hostapd.conf"
-      	echo "hostapd config variable not set, using $hostapdconffile"
+      		hostapdconffile="/etc/hostapd/hostapd.conf"
+      		echo "hostapd config variable not set, using $hostapdconffile"
 	fi
 	
 	if [ -z "$SSID" ];
 	then
 		SSID="wifi"
-	    echo "SSID variable not seting using $SSID"
+	    	echo "SSID variable not seting using $SSID"
 	fi
 	
 	if [ -z "$wlan_int_nic" ];
