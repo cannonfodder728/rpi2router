@@ -1,10 +1,5 @@
 #!/bin/bash
 
-#link for rtl 8192 drivers  wget https://dl.dropboxusercontent.com/u/80256631/8192eu-4.1.13-v7-826.tar.gz
-#wget https://dl.dropboxusercontent.com/u/80256631/8812au-4.1.18-v7-846.tar.gz
-#wget https://dl.dropboxusercontent.com/u/80256631/install-wifi.tar.gz
-#https://github.com/lostincynicism/hostapd-rtl8188/archive/master.zip
-#https://github.com/diederikdehaas/rtl8812AU/archive/driver-4.3.22-beta.zip
 
 hostapdconffile="/etc/hostapd/hostapd.conf"
 interfaces_file="/etc/network/interfaces"
@@ -94,9 +89,7 @@ echo "2) No"
 	
 read input
 if [ $input = "1" ];
-then
-	
-	
+then	
 	# Get rpi-source
 	sudo wget https://raw.githubusercontent.com/notro/rpi-source/master/rpi-source -O /usr/bin/rpi-source
 
@@ -260,46 +253,40 @@ then
 	fi
 	
 	lsusb
-	echo "The usb devices above were detected, is your device a Realtek chip based device? (Enter 1 or 2)"
-	echo "1) Yes"
-	echo "2) No"
-	read isRealTek
+	#echo "The usb devices above were detected, is your device a Realtek chip based device? (Enter 1 or 2)"
+	#echo "1) Yes"
+	#echo "2) No"
+	#read isRealTek
 
-	if [ $isRealTek = "1" ];
-	then
+	#if [ $isRealTek = "1" ];
+	#then
 		#download and install Realtek hostapd
         
        	# Remove any previous hostapd files
-		sudo apt-get purge -y hostapd
-		sudo rm /usr/local/bin/hostapd* && sudo rm /usr/bin/hostapd* && sudo rm /usr/sbin/hostapd* && sudo rm /etc/default/hostapd && sudo rm /usr/sbin/hostapd && sudo rm /etc/init.d/hostapd
+	#	sudo apt-get purge -y hostapd
+	#	sudo rm /usr/local/bin/hostapd* && sudo rm /usr/bin/hostapd* && sudo rm /usr/sbin/hostapd* && sudo rm /etc/default/hostapd && sudo rm /usr/sbin/hostapd && sudo rm /etc/init.d/hostapd
 
-		wget https://github.com/cannonfodder728/hostapdrtl80211ac/archive/master.zip
-		unzip master.zip
+	#	wget https://github.com/cannonfodder728/hostapdrtl80211ac/archive/master.zip
+	#	unzip master.zip
 		
-		cd hostapdrtl80211ac-master/hostapd
+	#	cd hostapdrtl80211ac-master/hostapd
 		
 		#apt-get install git build-essential fakeroot devscripts debhelper libnl-dev libssl-dev
 		#wget https://github.com/jekader/hostapd-rtl/archive/master.zip
 		#echo "CONFIG_IEEE80211AC=y" >> hostapd/.config
 		#cd hostapd-rtl-master
 		
-		sudo make clean
-		sudo make
-		sudo make install
-		sleep 10
-		sudo cp /usr/local/bin/hostapd /usr/sbin/hostapd
-		sudo mkdir /etc/hostapd
+	#	sudo make clean
+	#	sudo make
+	#	sudo make install
+	#	sleep 10
+	#	sudo cp /usr/local/bin/hostapd /usr/sbin/hostapd
+	#	sudo mkdir /etc/hostapd
 
-		sudo cp hostapdrtl80211ac-master/hostapd_default /etc/default/hostapd
-		sudo cp hostapdrtl80211ac-master/hostapd_initd /etc/init.d/hostapd
-		sudo chmod +x /etc/default/hostapd
-		sudo chmod +x /etc/init.d/hostapd
-		
-		sudo chown root:root /etc/default/hostapd
-		sudo chown root:root /etc/init.d/hostapd
-	else
+	#	sudo cp hostapdrtl80211ac-master/hostapd_initd /etc/init.d/hostapd
+	#else
 		sudo apt-get -y install hostapd
-	fi
+	#fi
 	
 	if [ -z "$now" ];
 	then
@@ -324,9 +311,16 @@ then
 	      	wlan_int_nic="wlan0"
 	      	echo "wlan nic variable not seting using $wlan_int_nic"
 	fi
-
+	
+	wget -O /etc/default/hostapd https://raw.githubusercontent.com/cannonfodder728/hostapdrtl80211ac/master/hostapd_default
+	wget -O /etc/init.d/hostapd https://raw.githubusercontent.com/cannonfodder728/hostapdrtl80211ac/master/hostapd_initd
 	sudo cp $hostapdconffile /etc/hostapd/hostapd$now
 	sudo rm -f $hostapdconffile
+	sudo chmod +x /etc/default/hostapd
+	sudo chmod +x /etc/init.d/hostapd
+		
+	sudo chown root:root /etc/default/hostapd
+	sudo chown root:root /etc/init.d/hostapd
 		
 	#Create Hostapd.conf file
 	#WPA and WPA2 configuration
@@ -338,12 +332,12 @@ then
 	sudo echo "interface=$wlan_int_nic">>$hostapdconffile
 	sudo echo "bridge=br0">>$hostapdconffile
 
-	if [ $isRealTek = "1" ];
-	then
-		sudo echo "driver=rtl871xdrv">>$hostapdconffile
-	else
+	#if [ $isRealTek = "1" ];
+	#then
+	#	sudo echo "driver=rtl871xdrv">>$hostapdconffile
+	#else
 		sudo echo "driver=nl80211">>$hostapdconffile
-	fi
+	#fi
 	sudo echo "ssid=$SSID">>$hostapdconffile
 	sudo echo "macaddr_acl=0">>$hostapdconffile
 	sudo echo "auth_algs=1">>$hostapdconffile
@@ -364,14 +358,14 @@ then
 		#sudo echo "vht_capab=[MAX-MPDU-11454][RXLDPC][SHORT-GI-80][TX-STBC-2BY1][RX-STBC-1]">>$hostapdconffile
 		#sudo echo "vht_oper_centr_freq_seg0_idx=62">>$hostapdconffile
 	else
-		sudo echo "channel=11">>$hostapdconffile
+		sudo echo "channel=6">>$hostapdconffile
 		sudo echo "ieee80211n=1">>$hostapdconffile
 		sudo echo "ht_capab=[HT40]">>$hostapdconffile
 		sudo echo "hw_mode=g">>$hostapdconffile
 		
 	fi
 	echo "Done configuring hostapd.conf file"
-	echo "DAEMON_CONF=\"/etc/hostapd/hostapd.conf\""
+
 	sudo update-rc.d hostapd defaults && sudo update-rc.d hostapd enable &&	sudo service hostapd start
 	echo "Done configuring hostapd"
 fi
@@ -671,5 +665,3 @@ then
 else
 	exit 0 
 fi
-
-
