@@ -180,7 +180,7 @@ then
 	read intnetbroadcast
 	
 	#echo "hostapd /etc/hostapd/hostapd.conf">>$interfaces_file
-	#echo "auto br0">>$interfaces_file	
+	echo "auto br0">>$interfaces_file	
 	echo "iface br0 inet static">>$interfaces_file
 	if [ -z "$wired_int_nic" ];
 	then
@@ -271,9 +271,7 @@ then
         
        	# Remove any previous hostapd files
 		sudo apt-get purge -y hostapd
-		sudo rm /usr/local/bin/hostapd*
-		sudo rm /usr/bin/hostapd*
-		sudo rm /usr/sbin/hostapd*
+		sudo rm /usr/local/bin/hostapd* && sudo rm /usr/bin/hostapd* && sudo rm /usr/sbin/hostapd* && sudo rm /etc/default/hostapd && sudo rm /usr/sbin/hostapd && sudo rm /etc/init.d/hostapd
 
 		wget https://github.com/cannonfodder728/hostapdrtl80211ac/archive/master.zip
 		unzip master.zip
@@ -288,7 +286,7 @@ then
 		sudo make clean
 		sudo make
 		sudo make install
-		sleep 5
+		sleep 10
 		sudo cp /usr/local/bin/hostapd /usr/sbin/hostapd
 		sudo mkdir /etc/hostapd
 
@@ -354,8 +352,8 @@ then
 	sudo echo "wpa_passphrase=$wifipass">>$hostapdconffile
 	sudo echo "wpa_key_mgmt=WPA-PSK">>$hostapdconffile
 	sudo echo "wpa_pairwise=CCMP">>$hostapdconffile
-	sudo echo "wme_enabled=1">>$hostapdconffile
-	
+	sudo echo "wmm_enabled=1">>$hostapdconffile
+		
 	if [ $fiveg = "1" ];
 	then 
 		sudo echo "ieee80211n=1">>$hostapdconffile
@@ -369,12 +367,12 @@ then
 		sudo echo "channel=11">>$hostapdconffile
 		sudo echo "ieee80211n=1">>$hostapdconffile
 		sudo echo "ht_capab=[HT40]">>$hostapdconffile
+		sudo echo "hw_mode=g">>$hostapdconffile
+		
 	fi
 	echo "Done configuring hostapd.conf file"
 
-	sudo update-rc.d hostapd defaults
-	sudo update-rc.d hostapd enable
-	sudo service hostapd start
+	sudo update-rc.d hostapd defaults && sudo update-rc.d hostapd enable &&	sudo service hostapd start
 	echo "Done configuring hostapd"
 fi
 
