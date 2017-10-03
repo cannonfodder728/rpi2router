@@ -371,7 +371,7 @@ then
 		
 	fi
 	echo "Done configuring hostapd.conf file"
-
+	echo "DAEMON_CONF=\"/etc/hostapd/hostapd.conf\""
 	sudo update-rc.d hostapd defaults && sudo update-rc.d hostapd enable &&	sudo service hostapd start
 	echo "Done configuring hostapd"
 fi
