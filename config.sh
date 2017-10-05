@@ -279,7 +279,7 @@ then
 
 	#	sudo cp hostapdrtl80211ac-master/hostapd_initd /etc/init.d/hostapd
 	#else
-		sudo apt-get -y install hostapd
+		#sudo apt-get -y install hostapd
 	#fi
 	
 	if [ -z "$now" ];
@@ -305,6 +305,8 @@ then
 	      	wlan_int_nic="wlan0"
 	      	echo "wlan nic variable not seting using $wlan_int_nic"
 	fi
+	wget -O /usr/sbin/hostapd https://raw.githubusercontent.com/cannonfodder728/hostapdrtl80211ac/master/hostapd
+	wget -O /usr/local/bin/hostapd https://raw.githubusercontent.com/cannonfodder728/hostapdrtl80211ac/master/hostapd
 	
 	wget -O /etc/default/hostapd https://raw.githubusercontent.com/cannonfodder728/hostapdrtl80211ac/master/hostapd_default
 	wget -O /etc/init.d/hostapd https://raw.githubusercontent.com/cannonfodder728/hostapdrtl80211ac/master/hostapd_initd
@@ -318,20 +320,21 @@ then
 		
 	#Create Hostapd.conf file
 	#WPA and WPA2 configuration
-	#sudo echo "logger_syslog=-1">>$hostapdconffile
-	#sudo echo "logger_syslog_level=2">>$hostapdconffile
-	#sudo echo "logger_stdout=-1">>$hostapdconffile
-	#sudo echo "logger_stdout_level=2">>$hostapdconffile
-
-	sudo echo "interface=$wlan_int_nic">>$hostapdconffile
-	sudo echo "bridge=br0">>$hostapdconffile
-
+	
+	
 	#if [ $isRealTek = "1" ];
 	#then
 	#	sudo echo "driver=rtl871xdrv">>$hostapdconffile
 	#else
 		sudo echo "driver=nl80211">>$hostapdconffile
 	#fi
+	sudo echo "logger_syslog=-1">>$hostapdconffile
+	sudo echo "logger_syslog_level=2">>$hostapdconffile
+	sudo echo "logger_stdout=-1">>$hostapdconffile
+	sudo echo "logger_stdout_level=2">>$hostapdconffile
+	sudo echo "interface=$wlan_int_nic">>$hostapdconffile
+	sudo echo "bridge=br0">>$hostapdconffile
+
 	sudo echo "ssid=$SSID">>$hostapdconffile
 	sudo echo "macaddr_acl=0">>$hostapdconffile
 	sudo echo "auth_algs=1">>$hostapdconffile
@@ -341,6 +344,7 @@ then
 	sudo echo "wpa_key_mgmt=WPA-PSK">>$hostapdconffile
 	sudo echo "wpa_pairwise=CCMP">>$hostapdconffile
 	sudo echo "wmm_enabled=1">>$hostapdconffile
+	sudo echo "wme_enabled=1">>$hostapdconffile
 		
 	if [ $fiveg = "1" ];
 	then 
@@ -354,9 +358,10 @@ then
 	else
 		sudo echo "channel=6">>$hostapdconffile
 		sudo echo "ieee80211n=1">>$hostapdconffile
-		sudo echo "ht_capab=[HT40]">>$hostapdconffile
+		sudo echo "ht_capab=[HT40-][SHORT-GI-40][DSSS_CCK-40]">>$hostapdconffile
 		sudo echo "hw_mode=g">>$hostapdconffile
-		
+		sudo echo "noscan=1">>$hostapdconffile
+			
 	fi
 	echo "Done configuring hostapd.conf file"
 
