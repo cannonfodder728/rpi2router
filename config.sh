@@ -58,6 +58,8 @@ read input
 if [ $input = "1" ];
 then
         sudo echo "blacklist brcmfmac" >> /etc/modprobe.d/brcmfmac.conf
+	    sudo echo "Disabled Onboard Wifi"
+
 fi
 
 ############################################################################################################################################################
@@ -290,8 +292,12 @@ then
 	
 	if [ -z "$hostapdconffile" ];
 	then
-      		hostapdconffile="/etc/hostapd/hostapd.conf"
-      		echo "hostapd config variable not set, using $hostapdconffile"
+
+	    echo "Hostapd Config file variable not seting using $hostapdconffile"
+		hostapdconffile="/etc/hostapd/hostapd.conf"
+
+		sudo mkdir /etc/hostapd
+		
 	fi
 	
 	if [ -z "$SSID" ];
@@ -328,7 +334,6 @@ then
 	#Create Hostapd.conf file
 	#WPA and WPA2 configuration
 	
-	
 	#if [ $isRealTek = "1" ];
 	#then
 	#	sudo echo "driver=rtl871xdrv">>$hostapdconffile
@@ -357,7 +362,7 @@ then
 	then 
 		sudo echo "ieee80211n=1">>$hostapdconffile
 		sudo echo "ieee80211ac=1">>$hostapdconffile
-		sudo echo "channel=52">>$hostapdconffile
+		sudo echo "channel=39">>$hostapdconffile
 		sudo echo "hw_mode=a">>$hostapdconffile
 		#sudo echo "vht_oper_chwidth=1">>$hostapdconffile
 		#sudo echo "vht_capab=[MAX-MPDU-11454][RXLDPC][SHORT-GI-80][TX-STBC-2BY1][RX-STBC-1]">>$hostapdconffile
