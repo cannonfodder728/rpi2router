@@ -1,6 +1,7 @@
 #!/bin/bash
 
 hostapdconffile="/etc/hostapd/hostapd.conf"
+sudo mkdir /etc/hostapd
 interfaces_file="/etc/network/interfaces"
 dhcpconffile="/etc/dhcp/dhcpd.conf"
 rclocalfile="/etc/rc.local"
@@ -296,7 +297,7 @@ then
 	    echo "Hostapd Config file variable not seting using $hostapdconffile"
 		hostapdconffile="/etc/hostapd/hostapd.conf"
 
-		sudo mkdir /etc/hostapd
+		
 		
 	fi
 	
