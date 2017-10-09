@@ -312,12 +312,19 @@ then
 	wget -O /etc/init.d/hostapd https://raw.githubusercontent.com/cannonfodder728/hostapdrtl80211ac/master/hostapd_initd
 	sudo cp $hostapdconffile /etc/hostapd/hostapd$now
 	sudo rm -f $hostapdconffile
+	
+	sudo chmod +x /usr/sbin/hostapd
+	sudo chmod +x /usr/local/bin/hostapd
 	sudo chmod +x /etc/default/hostapd
 	sudo chmod +x /etc/init.d/hostapd
 		
 	sudo chown root:root /etc/default/hostapd
 	sudo chown root:root /etc/init.d/hostapd
-		
+	sudo chown root:root /usr/sbin/hostapd
+	sudo chown root:root /usr/local/bin/hostapd
+	
+	
+	
 	#Create Hostapd.conf file
 	#WPA and WPA2 configuration
 	
