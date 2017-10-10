@@ -59,8 +59,9 @@ read input
 if [ $input = "1" ];
 then
         sudo echo "blacklist brcmfmac" >> /etc/modprobe.d/brcmfmac.conf
-	    sudo echo "Disabled Onboard Wifi"
-
+	rmmod brcmfmac
+	sudo echo "Disabled Onboard Wifi"
+	
 fi
 
 ############################################################################################################################################################
