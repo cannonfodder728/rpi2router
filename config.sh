@@ -7,6 +7,8 @@ dhcpconffile="/etc/dhcp/dhcpd.conf"
 rclocalfile="/etc/rc.local"
 now=$(date +"%m_%d_%Y_%H_%M_%S")
 
+apt-get -y update
+
 apt-get -y install sudo
 
 ##########################################################################################################################################################
