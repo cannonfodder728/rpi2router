@@ -8,6 +8,9 @@ Uses http://www.fars-robotics.net script to install wifi drivers
 Installs and configures hostapd
 Installs and configures dhcp server
 Installs Fail2Ban
-Firewall config (hardening WAN NIC)
+Firewall config (hardening WAN interface)
 Enables changing SSH Port
 
+
+TO DO:
+Parse iw list output to capture WLAN NIC capabilities to create chipset specific hostapd.conf file
