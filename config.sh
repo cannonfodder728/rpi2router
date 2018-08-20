@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 hostapdconffile="/etc/hostapd/hostapd.conf"
 sudo mkdir /etc/hostapd
 interfaces_file="/etc/network/interfaces"
@@ -14,13 +13,26 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 #type sudo &> /dev/null && echo found sudo || apt-get -y install sudo
+##########################################################################################################################################################
+#Install required utils
 
-type sudo &> /dev/null && echo found sudo || echo didnt find sudo && apt-get -y install hostapd
-sudo apt-get -y update
+apt-get -y update
 
-type raspi-config &> /dev/null && echo found raspi-config || echo didnt find raspi-config && sudo apt-get -y install raspi-config
-type pgrep &> /dev/null && echo found pgrep || echo didnt find pgrep && sudo apt-get -y install pgrep
-type htop &> /dev/null && echo htop || echo didnt find htop && sudo apt-get -y install htop
+pkgs="
+	sudo
+	raspi-config
+	rpi-update
+	htop
+	"
+	
+	# Install packages packages
+for i in $pkgs; do
+	type $i &> /dev/null && echo found $i || echo didnt find $i && sudo apt-get -y install $i
+done
+
+#type raspi-config &> /dev/null && echo found raspi-config || echo didnt find raspi-config && sudo apt-get -y install raspi-config
+#type pgrep &> /dev/null && echo found pgrep || echo didnt find pgrep && sudo apt-get -y install pgrep
+#type htop &> /dev/null && echo htop || echo didnt find htop && sudo apt-get -y install htop
 
 #apt-get -y install sudo
 #sudo apt-get -y dpkg-reconfigure
@@ -397,31 +409,6 @@ then
 fi
 
 ##########################################################################################################################################################
-#Configure users
-echo "Would you like to a new user?"
-echo "1) Yes"
-echo "2) No"
-read input
-
-if [ $input = "1" ]; then
-	echo "Enter Username of new user"
-	read user
-	apt-get install sudo
-	echo "adding user $user"
-	adduser $user 
-	adduser $user sudo
-	sudo usermod -a -G sudo $user
-	echo "Disable root account?"
-	echo "1) Yes"
-	echo "2) No"
-	read input
-	if [ $input = "1" ]; then
-		echo "disabling root user"
-		passwd -dl root
-	fi
-fi
-
-##########################################################################################################################################################
 #Configure sshd including new port
 
 echo "Would you like to change default SSH port and reconfigure SSH keys?"
@@ -551,6 +538,31 @@ then
 		echo "Password changed"
 	else
 		echo "Passwords didnt match, password NOT changed"
+	fi
+fi
+
+##########################################################################################################################################################
+#Configure users
+echo "Would you like to a new user?"
+echo "1) Yes"
+echo "2) No"
+read input
+
+if [ $input = "1" ]; then
+	echo "Enter Username of new user"
+	read user
+	apt-get install sudo
+	echo "adding user $user"
+	adduser $user 
+	adduser $user sudo
+	sudo usermod -a -G sudo $user
+	echo "Disable root account?"
+	echo "1) Yes"
+	echo "2) No"
+	read input
+	if [ $input = "1" ]; then
+		echo "disabling root user"
+		passwd -dl root
 	fi
 fi
 
