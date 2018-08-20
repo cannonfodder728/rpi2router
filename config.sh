@@ -307,10 +307,10 @@ then
 	#Create Hostapd.conf file
 	sudo cp $hostapdconffile /etc/hostapd/hostapd.conf.$now
 	sudo echo "driver=nl80211">>$hostapdconffile
-	sudo echo "logger_syslog=-1">>$hostapdconffile
-	sudo echo "logger_syslog_level=2">>$hostapdconffile
-	sudo echo "logger_stdout=-1">>$hostapdconffile
-	sudo echo "logger_stdout_level=2">>$hostapdconffile
+	sudo echo "#logger_syslog=-1">>$hostapdconffile
+	sudo echo "#logger_syslog_level=2">>$hostapdconffile
+	sudo echo "#logger_stdout=-1">>$hostapdconffile
+	sudo echo "#logger_stdout_level=2">>$hostapdconffile
 	sudo echo "interface=$wlan_int_nic">>$hostapdconffile
 	sudo echo "bridge=br0">>$hostapdconffile
 
@@ -322,27 +322,27 @@ then
 	sudo echo "wpa_passphrase=$wifipass">>$hostapdconffile
 	sudo echo "wpa_key_mgmt=WPA-PSK">>$hostapdconffile
 	sudo echo "wpa_pairwise=CCMP">>$hostapdconffile
+	sudo echo "require_ht=1">>$hostapdconffile
 	sudo echo "wmm_enabled=1">>$hostapdconffile
-	sudo echo "wme_enabled=1">>$hostapdconffile
-	sudo echo "DAEMON_CONF=\"/etc/hostapd/hostapd.conf\"">>/etc/default/hostapd
+	sudo echo "ieee80211n=1">>$hostapdconffile
 	if [ $fiveg = "1" ];
 	then 
-		sudo echo "ieee80211n=1">>$hostapdconffile
 		sudo echo "ieee80211ac=1">>$hostapdconffile
-		sudo echo "channel=39">>$hostapdconffile
+		sudo echo "channel=36">>$hostapdconffile
 		sudo echo "hw_mode=a">>$hostapdconffile
-		sudo echo "#vht_oper_chwidth=1">>$hostapdconffile
+		sudo echo "require_vht=1">>$hostapdconffile
+		sudo echo "vht_oper_chwidth=0">>$hostapdconffile
 		sudo echo "#vht_capab=[MAX-MPDU-11454][RXLDPC][SHORT-GI-80][TX-STBC-2BY1][RX-STBC-1]">>$hostapdconffile
 		sudo echo "#vht_oper_centr_freq_seg0_idx=62">>$hostapdconffile
 	else
 		sudo echo "channel=6">>$hostapdconffile
-		sudo echo "ieee80211n=1">>$hostapdconffile
 		sudo echo "#ht_capab=[HT40-][SHORT-GI-40][DSSS_CCK-40]">>$hostapdconffile
+		sudo echo "ht_capab=[HT40]">>$hostapdconffile
 		sudo echo "hw_mode=g">>$hostapdconffile
 		sudo echo "#noscan=1">>$hostapdconffile
-		sudo echo "require_ht=1">>$hostapdconffile
-
 	fi
+	sudo echo "DAEMON_CONF=\"/etc/hostapd/hostapd.conf\"">>/etc/default/hostapd
+	
 	echo "Done configuring hostapd.conf file"
 
 	sudo update-rc.d hostapd defaults && sudo update-rc.d hostapd enable &&	sudo service hostapd start
