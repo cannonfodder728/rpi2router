@@ -93,8 +93,18 @@ then
 		rmmod brcmfmac
 		sudo echo "Disabled Onboard Wifi"
 	fi
-##########################################################################################################################################################
-#Disable Bluetooth
+	
+	#Enable Serial Console
+	echo "Enable Serial Console? (Enter 1 or 2 or any other key to skip)"
+	echo "1) Yes"
+	echo "2) No"
+	read input
+	if [ $input = "1" ];
+	then
+        	sudo echo "enable_uart=1" >> /boot/config.txt
+	fi
+	
+	#Disable Bluetooth
 	echo "Disable bluetooth? (Enter 1 or 2 or any other key to skip)"
 	echo "1) Yes"
 	echo "2) No"
@@ -457,7 +467,7 @@ then
         sudo echo "filter = sshd" >> /etc/fail2ban/jail.local
         sudo echo "logpath = /var/log/auth.log" >> /etc/fail2ban/jail.local
         sudo echo "banaction = iptables-allports ; ban retrys on any port" >> /etc/fail2ban/jail.local
-        sudo echo "bantime = 600 ; ip address is banned for 10 minutes" >> /etc/fail2ban/jail.local
+        sudo echo "bantime = 6000 ; ip address is banned for 10 minutes" >> /etc/fail2ban/jail.local
         sudo echo "maxretry = 10 ; allow the ip address retry a max of 10 times" >> /etc/fail2ban/jail.local
 fi
 ##########################################################################################################################################################
