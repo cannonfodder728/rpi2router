@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 hostapdconffile="/etc/hostapd/hostapd.conf"
 sudo mkdir /etc/hostapd
 interfaces_file="/etc/network/interfaces"
@@ -7,6 +8,10 @@ dhcpconffile="/etc/dhcp/dhcpd.conf"
 rclocalfile="/etc/rc.local"
 now=$(date +"%m_%d_%Y_%H_%M_%S")
 
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root" 
+   exit 1
+fi
 
 #type sudo &> /dev/null && echo found sudo || apt-get -y install sudo
 
