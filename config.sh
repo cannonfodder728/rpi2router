@@ -402,6 +402,7 @@ then
 		sudo echo "#ht_capab=[HT40-][SHORT-GI-40][DSSS_CCK-40]">>$hostapdconffile
 		sudo echo "hw_mode=g">>$hostapdconffile
 		sudo echo "#noscan=1">>$hostapdconffile
+		sudo echo "require_ht=1">>$hostapdconffile
 
 	fi
 	echo "Done configuring hostapd.conf file"
