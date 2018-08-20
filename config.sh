@@ -441,7 +441,9 @@ fi
 
 ##########################################################################################################################################################
 #Configure fail2ban
-echo "Would you like to install Fail2Ban?" echo "1) Yes" echo "2) No"
+echo "Would you like to install Fail2Ban?" 
+echo "1) Yes" 
+echo "2) No"
 read fail2ban
 if [ $fail2ban = "1" ];
 then
@@ -488,7 +490,7 @@ then
 	echo "sudo ifdown br0">>$rclocalfile
 	echo "sudo ifup br0">>$rclocalfile
 	echo "sleep 5">>$rclocalfile
-    echo "sudo ifconfig $wlan_int_nic | grep -q $wlan_int_nic && echo 'found $wlan_int_nic nothing to do'> /dev/kmsg || sudo install-wifi ">>$rclocalfile
+    echo "sudo ifconfig $wlan_int_nic | grep -q $wlan_int_nic && echo 'found $wlan_int_nic nothing to do'> /dev/kmsg || sudo /usr/bin/install-wifi ">>$rclocalfile
 	
 	echo "sudo hostapd -B /etc/hostapd/hostapd.conf">>$rclocalfile
 	echo "sleep 5">>$rclocalfile
@@ -515,7 +517,18 @@ then
 fi
 
 ##########################################################################################################################################################
-#Change Password
+#Change current user Password
+echo "Would you like to change current user's password?"
+echo "1) Yes"
+echo "2) No"
+read changepass
+if [ $changepass = "1" ];
+then
+	passwd
+fi
+
+##########################################################################################################################################################
+#Change sudo Password
 echo "Would you like to change root password?"
 echo "1) Yes"
 echo "2) No"
