@@ -441,32 +441,30 @@ fi
 
 ##########################################################################################################################################################
 #Configure fail2ban
-
-echo "Would you like to install Fail2Ban?"
-echo "1) Yes"
-echo "2) No"
+echo "Would you like to install Fail2Ban?" echo "1) Yes" echo "2) No"
 read fail2ban
-if [ $fail2ban = "1" ]; then
-
-	sudo apt-get -y install fail2ban
-
-	# copy the example configuration file and make it live
-	sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
-
-  	if [ -z "$sshport" ];
+if [ $fail2ban = "1" ];
+then
+        sudo apt-get -y install fail2ban
+        sudo echo "installed fail2ban"
+        # copy the example configuration file and make it live
+        sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+        if [ -z "$sshport" ];
         then
-		sshportfail2ban ="22"
+                sshportfail2ban=22
+        else
+                sshportfail2ban=$sshport
         fi
-
-	sudo echo "[ssh]" >> /etc/fail2ban/jail.local
-	sudo echo "enabled  = true" >> /etc/fail2ban/jail.local
-	sudo echo "port     = $sshportfail2ban" >> /etc/fail2ban/jail.local
-	sudo echo "filter   = sshd" >> /etc/fail2ban/jail.local
-	sudo echo "logpath  = /var/log/auth.log" >> /etc/fail2ban/jail.local
-	sudo echo "banaction = iptables-allports    ; ban retrys on any port" >> /etc/fail2ban/jail.local
-	sudo echo "bantime  = 600                   ; ip address is banned for 10 minutes" >> /etc/fail2ban/jail.local
-	sudo echo "maxretry = 10                    ; allow the ip address retry a max of 10 times" >> /etc/fail2ban/jail.local
-
+        #echo $sshportfail2ban
+        sudo echo "using $sshportfail2ban as ssh port"
+        sudo echo "[ssh]" >> /etc/fail2ban/jail.local
+        sudo echo "enabled = true" >> /etc/fail2ban/jail.local
+        sudo echo "port = $sshportfail2ban" >> /etc/fail2ban/jail.local
+        sudo echo "filter = sshd" >> /etc/fail2ban/jail.local
+        sudo echo "logpath = /var/log/auth.log" >> /etc/fail2ban/jail.local
+        sudo echo "banaction = iptables-allports ; ban retrys on any port" >> /etc/fail2ban/jail.local
+        sudo echo "bantime = 600 ; ip address is banned for 10 minutes" >> /etc/fail2ban/jail.local
+        sudo echo "maxretry = 10 ; allow the ip address retry a max of 10 times" >> /etc/fail2ban/jail.local
 fi
 ##########################################################################################################################################################
 #configure firewall
