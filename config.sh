@@ -14,7 +14,8 @@ type sudo &> /dev/null && echo found sudo || echo didnt find sudo && apt-get -y 
 sudo apt-get -y update
 
 type raspi-config &> /dev/null && echo found raspi-config || echo didnt find raspi-config && sudo apt-get -y install raspi-config
-
+type pgrep &> /dev/null && echo found pgrep || echo didnt find pgrep && sudo apt-get -y install pgrep
+type htop &> /dev/null && echo htop || echo didnt find htop && sudo apt-get -y install htop
 
 #apt-get -y install sudo
 #sudo apt-get -y dpkg-reconfigure
@@ -61,32 +62,34 @@ fi
 
 ############################################################################################################################################################
 #Disable Onboard WiFi 
-echo "If you're running RPI3 do you want to disable onboard WIFI? (Enter 1 or 2 or any other key to skip)"
-echo "1) Yes"
-echo "2) No"
-
-read input
-if [ $input = "1" ];
+rpi3=$(cat /proc/device-tree/model | grep -ie 'Raspberry Pi 3' | wc -l)
+if [ $rpi3 -ge 1 ];
 then
-        sudo echo "blacklist brcmfmac" >> /etc/modprobe.d/brcmfmac.conf
-	rmmod brcmfmac
-	sudo echo "Disabled Onboard Wifi"
+	echo "Looks like you're running RPI3.  Do want to disable onboard WIFI? (Enter 1 or 2 or any other key to skip)"
+	echo "1) Yes"
+	echo "2) No"
 
-fi
-
+	read input
+	if [ $input = "1" ];
+	then
+        	sudo echo "blacklist brcmfmac" >> /etc/modprobe.d/brcmfmac.conf
+		rmmod brcmfmac
+		sudo echo "Disabled Onboard Wifi"
+	fi
 ##########################################################################################################################################################
 #Disable Bluetooth
-echo "Disable bluetooh? (Enter 1 or 2 or any other key to skip)"
-echo "1) Yes"
-echo "2) No"
+	echo "Disable bluetooth? (Enter 1 or 2 or any other key to skip)"
+	echo "1) Yes"
+	echo "2) No"
 
-read input
-if [ $input = "1" ];
-then
-        #sudo echo "blacklist brcmfmac" >> /etc/modprobe.d/brcmfmac.conf
-        #rmmod brcmfmac
-        #sudo echo "Disabled Onboard Wifi"
-	sudo echo "dtoverlay=pi3-disable-bt" >> /boot/config.txt
+	read input
+	if [ $input = "1" ];
+	then
+        	#sudo echo "blacklist brcmfmac" >> /etc/modprobe.d/brcmfmac.conf
+        	#rmmod brcmfmac
+        	#sudo echo "Disabled Onboard Wifi"
+		sudo echo "dtoverlay=pi3-disable-bt" >> /boot/config.txt
+	fi
 fi
 
 ############################################################################################################################################################
