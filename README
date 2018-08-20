@@ -1,1 +1,13 @@
 Bash Script designed to turn RPI into Router.  
+Supports multiple internal NICS through bridge interface and single WAN NIC
+
+Resizes SD Card
+Sets Time
+Installs needed packages and utils
+Uses http://www.fars-robotics.net script to install wifi drivers
+Installs and configures hostapd
+Installs and configures dhcp server
+Installs Fail2Ban
+Firewall config (hardening WAN NIC)
+Enables changing SSH Port
+
