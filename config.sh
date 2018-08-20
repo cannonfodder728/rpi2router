@@ -74,6 +74,7 @@ then
 
 fi
 
+##########################################################################################################################################################
 #Disable Bluetooth
 echo "Disable bluetooh? (Enter 1 or 2 or any other key to skip)"
 echo "1) Yes"
@@ -86,7 +87,6 @@ then
         #rmmod brcmfmac
         #sudo echo "Disabled Onboard Wifi"
 	sudo echo "dtoverlay=pi3-disable-bt" >> /boot/config.txt
-
 fi
 
 ############################################################################################################################################################
@@ -100,9 +100,8 @@ if [ $input = "1" ];
 then
     sudo wget http://www.fars-robotics.net/install-wifi -O /usr/bin/install-wifi
     sudo chmod +x /usr/bin/install-wifi
-
     sudo install-wifi
- 
+
 fi
 
 ############################################################################################################################################################
@@ -274,42 +273,6 @@ then
 	if [ $input1 = "1" ]; then
 		fiveg="1"
 	fi
-
-	#lsusb
-	#echo "The usb devices above were detected, is your device a Realtek chip based device? (Enter 1 or 2)"
-	#echo "1) Yes"
-	#echo "2) No"
-	#read isRealTek
-
-	#if [ $isRealTek = "1" ];
-	#then
-		#download and install Realtek hostapd
-
-       	# Remove any previous hostapd files
-	#	sudo apt-get purge -y hostapd
-	#	sudo rm /usr/local/bin/hostapd* && sudo rm /usr/bin/hostapd* && sudo rm /usr/sbin/hostapd* && sudo rm /etc/default/hostapd && sudo rm /usr/sbin/hostapd && sudo rm /etc/init.d/hostapd
-
-	#	wget https://github.com/cannonfodder728/hostapdrtl80211ac/archive/master.zip
-	#	unzip master.zip
-		
-	#	cd hostapdrtl80211ac-master/hostapd
-		
-		#apt-get install git build-essential fakeroot devscripts debhelper libnl-dev libssl-dev
-		#wget https://github.com/jekader/hostapd-rtl/archive/master.zip
-		#echo "CONFIG_IEEE80211AC=y" >> hostapd/.config
-		#cd hostapd-rtl-master
-		
-	#	sudo make clean
-	#	sudo make
-	#	sudo make install
-	#	sleep 10
-	#	sudo cp /usr/local/bin/hostapd /usr/sbin/hostapd
-	#	sudo mkdir /etc/hostapd
-
-	#	sudo cp hostapdrtl80211ac-master/hostapd_initd /etc/init.d/hostapd
-	#else
-		#sudo apt-get -y install hostapd
-	#fi
 	
 	if [ -z "$now" ];
 	then
@@ -319,12 +282,8 @@ then
 	
 	if [ -z "$hostapdconffile" ];
 	then
-
-	    echo "Hostapd Config file variable not seting using $hostapdconffile"
+		echo "Hostapd Config file variable not seting using $hostapdconffile"
 		hostapdconffile="/etc/hostapd/hostapd.conf"
-
-		
-		
 	fi
 	
 	if [ -z "$SSID" ];
@@ -338,37 +297,13 @@ then
 	      	wlan_int_nic="wlan0"
 	      	echo "wlan nic variable not seting using $wlan_int_nic"
 	fi
-	#wget -O /usr/sbin/hostapd https://raw.githubusercontent.com/cannonfodder728/hostapdrtl80211ac/master/hostapd
-	#wget -O /usr/local/bin/hostapd https://raw.githubusercontent.com/cannonfodder728/hostapdrtl80211ac/master/hostapd
 	
-	#wget -O /etc/default/hostapd https://raw.githubusercontent.com/cannonfodder728/hostapdrtl80211ac/master/hostapd_default
-	#wget -O /etc/init.d/hostapd https://raw.githubusercontent.com/cannonfodder728/hostapdrtl80211ac/master/hostapd_initd
-	#sudo cp $hostapdconffile /etc/hostapd/hostapd$now
-	#sudo rm -f $hostapdconffile
-	
-	#sudo chmod +x /usr/sbin/hostapd
-	#sudo chmod +x /usr/local/bin/hostapd
-	#sudo chmod +x /etc/default/hostapd
-	#sudo chmod +x /etc/init.d/hostapd
-		
-	#sudo chown root:root /etc/default/hostapd
-	#sudo chown root:root /etc/init.d/hostapd
-	#sudo chown root:root /usr/sbin/hostapd
-	#sudo chown root:root /usr/local/bin/hostapd
 	sudo apt-get -y install hostapd
 	
 	
 	#Create Hostapd.conf file
-	#WPA and WPA2 configuration
-	
-	#if [ $isRealTek = "1" ];
-	#then
-	#	sudo echo "driver=rtl871xdrv">>$hostapdconffile
-	#else
-		sudo echo "driver=nl80211">>$hostapdconffile
-	#fi
 	sudo cp $hostapdconffile /etc/hostapd/hostapd.conf.$now
-
+	sudo echo "driver=nl80211">>$hostapdconffile
 	sudo echo "logger_syslog=-1">>$hostapdconffile
 	sudo echo "logger_syslog_level=2">>$hostapdconffile
 	sudo echo "logger_stdout=-1">>$hostapdconffile
