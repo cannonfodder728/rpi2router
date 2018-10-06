@@ -23,6 +23,30 @@ pkgs="
 	raspi-config
 	rpi-update
 	htop
+	screen
+	iperf
+	libnl-route-3-200
+	libnl-genl-3-200
+	libnl-3-200
+	libncurses5-dev
+	lshw
+	bridge-utils
+	libnl-dev
+	libssl-dev
+	file
+	build-essential
+	curl
+	usbutils
+	iptables
+	nano
+	wireless-tools
+	iw
+	git
+	unzip
+	dkms
+	bc
+	python
+	
 	"
 	
 	# Install packages packages
@@ -73,7 +97,6 @@ read input
 if [ $input = "1" ];
 then
 	sudo apt-get -y update && sudo apt-get -y upgrade
-	sudo apt-get -y install htop screen iperf libnl-route-3-200 libncurses5-dev lshw bridge-utils libnl-dev libssl-dev file libnl-3-200 libnl-genl-3-200 build-essential curl usbutils iptables nano wireless-tools iw git unzip dkms bc python raspberrypi-kernel-headers rpi-update 
 	sudo rpi-update
 fi
 
@@ -508,6 +531,7 @@ then
 	sudo iptables -A OUTPUT -p tcp --tcp-flags SYN,FIN SYN,FIN -j DROP
 	sudo iptables -A OUTPUT -p tcp --tcp-flags SYN,RST SYN,RST -j DROP
 	sudo iptables -A OUTPUT -p tcp --tcp-flags ALL NONE -j DROP
+	sudo iptables -A OUTPUT -i $wired_ext_nic -p icmp --icmp-type echo-request -j DROP
 	sudo rm -f /etc/iptables.ipv4.nat
 	sudo sh -c "iptables-save > /etc/iptables.ipv4.nat"
 
