@@ -356,26 +356,27 @@ then
 	
 	
 	#Create Hostapd.conf file
-	 cp $hostapdconffile /etc/hostapd/hostapd.conf.$now
-	 echo "driver=nl80211">>$hostapdconffile
-	 echo "#logger_syslog=-1">>$hostapdconffile
-	 echo "#logger_syslog_level=2">>$hostapdconffile
-	 echo "#logger_stdout=-1">>$hostapdconffile
-	 echo "#logger_stdout_level=2">>$hostapdconffile
-	 echo "interface=$wlan_int_nic">>$hostapdconffile
-	 echo "bridge=br0">>$hostapdconffile
+	cp $hostapdconffile /etc/hostapd/hostapd.conf.$now
+	echo "driver=nl80211">>$hostapdconffile
+	echo "#logger_syslog=-1">>$hostapdconffile
+	echo "#logger_syslog_level=2">>$hostapdconffile
+	echo "#logger_stdout=-1">>$hostapdconffile
+	echo "#logger_stdout_level=2">>$hostapdconffile
+	echo "interface=$wlan_int_nic">>$hostapdconffile
+	echo "bridge=br0">>$hostapdconffile
 
-	 echo "ssid=$SSID">>$hostapdconffile
-	 echo "macaddr_acl=0">>$hostapdconffile
-	 echo "auth_algs=1">>$hostapdconffile
-	 echo "ignore_broadcast_ssid=0">>$hostapdconffile
-	 echo "wpa=2">>$hostapdconffile
-	 echo "wpa_passphrase=$wifipass">>$hostapdconffile
-	 echo "wpa_key_mgmt=WPA-PSK">>$hostapdconffile
-	 echo "wpa_pairwise=CCMP">>$hostapdconffile
-	 echo "require_ht=1">>$hostapdconffile
-	 echo "wmm_enabled=1">>$hostapdconffile
-	 echo "ieee80211n=1">>$hostapdconffile
+	echo "ssid=$SSID">>$hostapdconffile
+	echo "macaddr_acl=0">>$hostapdconffile
+	echo "auth_algs=1">>$hostapdconffile
+	echo "ignore_broadcast_ssid=0">>$hostapdconffile
+	echo "wpa=2">>$hostapdconffile
+	echo "wpa_passphrase=$wifipass">>$hostapdconffile
+	echo "wpa_key_mgmt=WPA-PSK">>$hostapdconffile
+	echo "wpa_pairwise=CCMP">>$hostapdconffile
+	echo "require_ht=1">>$hostapdconffile
+	echo "wmm_enabled=1">>$hostapdconffile
+	echo "ieee80211n=1">>$hostapdconffile
+	
 	if [ $fiveg = "1" ];
 	then 
 		 echo "ieee80211ac=1">>$hostapdconffile
@@ -392,11 +393,11 @@ then
 		 echo "hw_mode=g">>$hostapdconffile
 		 echo "#noscan=1">>$hostapdconffile
 	fi
-	 echo "DAEMON_CONF=\"/etc/hostapd/hostapd.conf\"">>/etc/default/hostapd
+	echo "DAEMON_CONF=\"/etc/hostapd/hostapd.conf\"">>/etc/default/hostapd
 	
 	echo "Done configuring hostapd.conf file"
 
-	 update-rc.d hostapd defaults &&  update-rc.d hostapd enable &&	 service hostapd start
+	update-rc.d hostapd defaults &&  update-rc.d hostapd enable && service hostapd start
 	echo "Done configuring hostapd"
 fi
 
@@ -536,33 +537,33 @@ then
 	echo " ifdown $wired_ext_nic">>$rclocalfile
 	echo " ifup $wired_ext_nic">>$rclocalfile
 	
-	echo "sleep 5">>$rclocalfile
+	echo "sleep 3">>$rclocalfile
 	echo " ifdown br0">>$rclocalfile
 	echo " ifup br0">>$rclocalfile
-	echo "sleep 5">>$rclocalfile
+	echo "sleep 3">>$rclocalfile
     	echo " ifconfig $wlan_int_nic | grep -q $wlan_int_nic && echo 'found $wlan_int_nic nothing to do'> /dev/kmsg ||  /usr/bin/install-wifi ">>$rclocalfile
 	
 	echo " hostapd -B /etc/hostapd/hostapd.conf">>$rclocalfile
-	echo "sleep 5">>$rclocalfile
+	echo "sleep 3">>$rclocalfile
 	echo " service isc-dhcp-server restart">>$rclocalfile
 	echo "exit 0">>$rclocalfile
 
 	iptables -F
 	iptables -t nat -A POSTROUTING -o $wired_ext_nic -j MASQUERADE
-	 iptables -A FORWARD -i $wired_ext_nic -o br0 -m state --state RELATED,ESTABLISHED -j ACCEPT
-	 iptables -A FORWARD -i br0 -o $wired_ext_nic -j ACCEPT
-	 iptables -A OUTPUT -p tcp --tcp-flags ALL ALL -j DROP
-	 iptables -A OUTPUT -p tcp --tcp-flags ALL ACK,RST,SYN,FIN -j DROP
-	 iptables -A OUTPUT -p tcp --tcp-flags SYN,FIN SYN,FIN -j DROP
-	 iptables -A OUTPUT -p tcp --tcp-flags SYN,RST SYN,RST -j DROP
-	 iptables -A OUTPUT -p tcp --tcp-flags ALL NONE -j DROP
-	 iptables -A OUTPUT -i $wired_ext_nic -p icmp --icmp-type echo-request -j DROP
-	 rm -f /etc/iptables.ipv4.nat
-	 sh -c "iptables-save > /etc/iptables.ipv4.nat"
+	iptables -A FORWARD -i $wired_ext_nic -o br0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+	iptables -A FORWARD -i br0 -o $wired_ext_nic -j ACCEPT
+	iptables -A OUTPUT -p tcp --tcp-flags ALL ALL -j DROP
+	iptables -A OUTPUT -p tcp --tcp-flags ALL ACK,RST,SYN,FIN -j DROP
+	iptables -A OUTPUT -p tcp --tcp-flags SYN,FIN SYN,FIN -j DROP
+	iptables -A OUTPUT -p tcp --tcp-flags SYN,RST SYN,RST -j DROP
+	iptables -A OUTPUT -p tcp --tcp-flags ALL NONE -j DROP
+	iptables -A OUTPUT -i $wired_ext_nic -p icmp --icmp-type echo-request -j DROP
+	rm -f /etc/iptables.ipv4.nat
+	sh -c "iptables-save > /etc/iptables.ipv4.nat"
 
 	# sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
 
-	 echo "up iptables-restore < /etc/iptables.ipv4.nat">> /etc/network/interfaces
+	echo "up iptables-restore < /etc/iptables.ipv4.nat">> /etc/network/interfaces
 
 	echo "Done setting up startup script with Firewall Rules"
 fi
@@ -614,7 +615,7 @@ if [ $input = "1" ]; then
 	echo "adding user $user"
 	adduser $user 
 	adduser $user 
-	 usermod -a -G  $user
+	usermod -a -G  $user
 fi
 
 ##########################################################################################################################################################
@@ -738,13 +739,11 @@ echo "2) No"
 read clearlogs
 if [ $clearlogs = "1" ];
 then
-	 apt-get autoremove &&  apt-get clean &&  apt-get autoclean
+	apt-get autoremove &&  apt-get clean &&  apt-get autoclean
 	for logs in `find /var/log -type f`; do > $logs; done
-	 cat /dev/null > .bash_history
+	cat /dev/null > .bash_history
 	history -cw
-	
 fi
-
 
 ##########################################################################################################################################################
 #Finish up
@@ -758,7 +757,7 @@ then
 	# apt-get update
 	# apt-get upgrade
 	echo "Rebooting now!"
-	 reboot
+	reboot
 else
 	exit 0 
 fi
