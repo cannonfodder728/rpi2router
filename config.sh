@@ -1,7 +1,6 @@
 #!/bin/bash
 
 hostapdconffile="/etc/hostapd/hostapd.conf"
-sudo mkdir /etc/hostapd
 interfaces_file="/etc/network/interfaces"
 dhcpconffile="/etc/dhcp/dhcpd.conf"
 rclocalfile="/etc/rc.local"
@@ -12,14 +11,13 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-#type sudo &> /dev/null && echo found sudo || apt-get -y install sudo
 ##########################################################################################################################################################
 #Install required utils
 
 apt-get -y update
 
 pkgs="
-	sudo
+	
 	raspi-config
 	rpi-update
 	htop
@@ -46,20 +44,18 @@ pkgs="
 	dkms
 	bc
 	python
+	ethtool
 	
 	"
 	
 	# Install packages packages
 for i in $pkgs; do
-	type $i &> /dev/null && echo found $i || echo didnt find $i && sudo apt-get -y install $i
+	type $i &> /dev/null && echo found $i || echo didnt find $i &&  apt-get -y install $i	
 done
 
-#type raspi-config &> /dev/null && echo found raspi-config || echo didnt find raspi-config && sudo apt-get -y install raspi-config
-#type pgrep &> /dev/null && echo found pgrep || echo didnt find pgrep && sudo apt-get -y install pgrep
-#type htop &> /dev/null && echo htop || echo didnt find htop && sudo apt-get -y install htop
+echo "Adding ssh file to boot to ensure SSH is open"
+touch /boot/ssh
 
-#apt-get -y install sudo
-#sudo apt-get -y dpkg-reconfigure
 
 ##########################################################################################################################################################
 #Resize SD CARD file
@@ -70,8 +66,8 @@ echo "2) No"
 read -r input
 if [ $input = "1" ];
 then
-	sudo apt-get -y install raspi-config
-	sudo raspi-config
+	apt-get -y install raspi-config
+	 raspi-config
 fi
 
 ##########################################################################################################################################################
@@ -83,22 +79,10 @@ echo "2) No"
 read input
 if [ $input = "1" ];
 then
-	sudo apt-get -y install dpkg-reconfigure
-	sudo dpkg-reconfigure tzdata
+	 apt-get -y install dpkg-reconfigure
+	 dpkg-reconfigure tzdata
 fi
 
-##########################################################################################################################################################
-#Install packages
-echo "Install needed packages? (ie sudo, build-essential, rpi-update, usbutils, wifi tools, usb tools, unzip, etc)? (Enter 1 or 2 or any other key to skip)"
-echo "1) Yes"
-echo "2) No"
-
-read input
-if [ $input = "1" ];
-then
-	sudo apt-get -y update && sudo apt-get -y upgrade
-	sudo rpi-update
-fi
 
 ############################################################################################################################################################
 #Disable Onboard WiFi 
@@ -112,9 +96,9 @@ then
 	read input
 	if [ $input = "1" ];
 	then
-        	sudo echo "blacklist brcmfmac" >> /etc/modprobe.d/brcmfmac.conf
+        	 echo "blacklist brcmfmac" >> /etc/modprobe.d/brcmfmac.conf
 		rmmod brcmfmac
-		sudo echo "Disabled Onboard Wifi"
+		 echo "Disabled Onboard Wifi"
 	fi
 	
 	#Enable Serial Console
@@ -124,7 +108,7 @@ then
 	read input
 	if [ $input = "1" ];
 	then
-        	sudo echo "enable_uart=1" >> /boot/config.txt
+        	 echo "enable_uart=1" >> /boot/config.txt
 	fi
 	
 	#Disable Bluetooth
@@ -135,11 +119,23 @@ then
 	read input
 	if [ $input = "1" ];
 	then
-        	#sudo echo "blacklist brcmfmac" >> /etc/modprobe.d/brcmfmac.conf
-        	#rmmod brcmfmac
-        	#sudo echo "Disabled Onboard Wifi"
-		sudo echo "dtoverlay=pi3-disable-bt" >> /boot/config.txt
+		echo "dtoverlay=pi3-disable-bt" >> /boot/config.txt
 	fi
+fi
+
+
+############################################################################################################################################################
+#change hostname
+echo "Change hostname? (Enter 1 or 2 or any other key to skip)"
+echo "1) Yes"
+echo "2) No"
+
+read input
+if [ $input = "1" ];
+then
+    echo "Enter new hostname"
+	read hostname
+	echo $hostname > /etc/hostname
 fi
 
 ############################################################################################################################################################
@@ -151,10 +147,10 @@ echo "2) No"
 read input
 if [ $input = "1" ];
 then
-    sudo wget http://www.fars-robotics.net/install-wifi -O /usr/bin/install-wifi
-    sudo chmod +x /usr/bin/install-wifi
-    sudo install-wifi
-
+     wget http://www.fars-robotics.net/install-wifi -O /usr/bin/install-wifi
+     chmod +x /usr/bin/install-wifi
+     install-wifi
+	sleep 3
 fi
 
 ############################################################################################################################################################
@@ -167,10 +163,10 @@ read input
 if [ $input = "1" ];
 then	
 	# Get rpi-source
-	sudo wget https://raw.githubusercontent.com/notro/rpi-source/master/rpi-source -O /usr/bin/rpi-source
+	 wget https://raw.githubusercontent.com/notro/rpi-source/master/rpi-source -O /usr/bin/rpi-source
 
 	# Make it executable
-	sudo chmod +x /usr/bin/rpi-source
+	 chmod +x /usr/bin/rpi-source
 
 	# Tell the update mechanism that this is the latest version of the script
 	/usr/bin/rpi-source -q --tag-update
@@ -182,15 +178,24 @@ fi
 ##########################################################################################################################################################
 #List Network Interfaces and input wired and wireless nic device names
 echo "The following interfaces were found on your Pi"
-ifconfig -a | sed 's/[ \t].*//;/^$/d'
+for f in /sys/class/net/*; do
+    dev=$(basename $f)
+    driver=$(readlink $f/device/driver/module)
+    if [ $driver ]; then
+        driver=$(basename $driver)
+    fi
+    addr=$(cat $f/address)
+    operstate=$(cat $f/operstate)
+    printf "%10s [%s]: %10s (%s)\n" "$dev" "$addr" "$driver" "$operstate"
+done
 
 echo "Enter Wired interface which will be connected to Internet"
 read wired_ext_nic
 
-echo "Enter WLAN interface which will be used for  Internal Network (Press Enter to skip)"
+echo "Enter WLAN interface which will be used for  Internal Network"
 read wlan_int_nic
 
-echo "Enter Wired interface which will be used for Internal Network (Press Enter to skip)"
+echo "Enter Wired interface which will be used for Internal Network"
 read wired_int_nic
 
 #read -p "Enter up to two interfaces which will be added to bridge for internal network (if you have wireless and wired enter both those interfaces with spaces in between)" intnic1 intnic2
@@ -204,8 +209,8 @@ echo "2) No"
 read input
 if [ $input = "1" ];
 then
-	sudo cp $interfaces_file /etc/network/interfaces$now
-	sudo rm -f $interfaces_file
+	cp $interfaces_file /etc/network/interfaces$now
+	rm -f $interfaces_file
 	echo "auto lo">>$interfaces_file
 	echo "iface lo inet loopback">>$interfaces_file
 
@@ -232,20 +237,22 @@ fi
 
 ##########################################################################################################################################################
 #configure internal network appropriately
-echo "How will internal connection be configured? (Note: Hostapd entry will point to /etc/hostapd/hostapd.conf) (Enter 1 or 2 or any other key to skip)"
-echo "1) Static"
-echo "2) DHCP"
+#echo "How will internal connection be configured? (Note: Hostapd entry will point to /etc/hostapd/hostapd.conf) (Enter 1 or 2 or any other key to skip)"
+#echo "1) Static"
+#echo "2) DHCP"
 
-read input
-if [ $input = "1" ];
-then
+#read input
+#if [ $input = "1" ];
+#then
 	echo "Config Bridge Interface"
 	echo "Enter Static IP Address for internal network"
 	read intstaticip
+	
 	echo "Enter Netmask for internal network"
 	read intnetmask
-	echo "Enter Broadcast Address for internal network"
-	read intnetbroadcast
+	
+	intnetbroadcast=$(awk -F"." '{print $1"."$2"."$3".0"}'<<<$inetstaticip)
+    echo " using $intnetbroadcast for subnet"
 
 	#echo "hostapd /etc/hostapd/hostapd.conf">>$interfaces_file
 	echo "auto br0">>$interfaces_file	
@@ -261,18 +268,12 @@ then
 	echo "broadcast $intnetbroadcast">>$interfaces_file
 	echo "netmask $intnetmask">>$interfaces_file
 
-fi
-
-#if [ $input = "2" ];
-#then
-#	echo "Config Backup using DHCP"
-#	echo "auto $wlan_nic">>$interfaces_file
-#	echo "iface $wlan_nic inet dhcp">>$interfaces_file
 #fi
+
 
 ##########################################################################################################################################################
 #configure external wired nic appropriately
-echo "How will external (Internet facing) connection be configured? (Enter 1 or 2 or any other key to skip)"
+echo "How will external (Internet/WAN) connection be configured? (Enter 1 or 2 or any other key to skip)"
 echo "1) Static"
 echo "2) DHCP"
 
@@ -335,67 +336,67 @@ then
 	
 	if [ -z "$hostapdconffile" ];
 	then
-		echo "Hostapd Config file variable not seting using $hostapdconffile"
 		hostapdconffile="/etc/hostapd/hostapd.conf"
+		echo "Hostapd Config file variable not setting using $hostapdconffile"
 	fi
 	
 	if [ -z "$SSID" ];
 	then
 		SSID="wifi"
-	    	echo "SSID variable not seting using $SSID"
+	    echo "SSID variable not seting using $SSID"
 	fi
 	
 	if [ -z "$wlan_int_nic" ];
 	then
-	      	wlan_int_nic="wlan0"
-	      	echo "wlan nic variable not seting using $wlan_int_nic"
+		wlan_int_nic="wlan0"
+	     echo "wlan nic variable not seting using $wlan_int_nic"
 	fi
 	
-	sudo apt-get -y install hostapd
+	 apt-get -y install hostapd
 	
 	
 	#Create Hostapd.conf file
-	sudo cp $hostapdconffile /etc/hostapd/hostapd.conf.$now
-	sudo echo "driver=nl80211">>$hostapdconffile
-	sudo echo "#logger_syslog=-1">>$hostapdconffile
-	sudo echo "#logger_syslog_level=2">>$hostapdconffile
-	sudo echo "#logger_stdout=-1">>$hostapdconffile
-	sudo echo "#logger_stdout_level=2">>$hostapdconffile
-	sudo echo "interface=$wlan_int_nic">>$hostapdconffile
-	sudo echo "bridge=br0">>$hostapdconffile
+	 cp $hostapdconffile /etc/hostapd/hostapd.conf.$now
+	 echo "driver=nl80211">>$hostapdconffile
+	 echo "#logger_syslog=-1">>$hostapdconffile
+	 echo "#logger_syslog_level=2">>$hostapdconffile
+	 echo "#logger_stdout=-1">>$hostapdconffile
+	 echo "#logger_stdout_level=2">>$hostapdconffile
+	 echo "interface=$wlan_int_nic">>$hostapdconffile
+	 echo "bridge=br0">>$hostapdconffile
 
-	sudo echo "ssid=$SSID">>$hostapdconffile
-	sudo echo "macaddr_acl=0">>$hostapdconffile
-	sudo echo "auth_algs=1">>$hostapdconffile
-	sudo echo "ignore_broadcast_ssid=0">>$hostapdconffile
-	sudo echo "wpa=2">>$hostapdconffile
-	sudo echo "wpa_passphrase=$wifipass">>$hostapdconffile
-	sudo echo "wpa_key_mgmt=WPA-PSK">>$hostapdconffile
-	sudo echo "wpa_pairwise=CCMP">>$hostapdconffile
-	sudo echo "require_ht=1">>$hostapdconffile
-	sudo echo "wmm_enabled=1">>$hostapdconffile
-	sudo echo "ieee80211n=1">>$hostapdconffile
+	 echo "ssid=$SSID">>$hostapdconffile
+	 echo "macaddr_acl=0">>$hostapdconffile
+	 echo "auth_algs=1">>$hostapdconffile
+	 echo "ignore_broadcast_ssid=0">>$hostapdconffile
+	 echo "wpa=2">>$hostapdconffile
+	 echo "wpa_passphrase=$wifipass">>$hostapdconffile
+	 echo "wpa_key_mgmt=WPA-PSK">>$hostapdconffile
+	 echo "wpa_pairwise=CCMP">>$hostapdconffile
+	 echo "require_ht=1">>$hostapdconffile
+	 echo "wmm_enabled=1">>$hostapdconffile
+	 echo "ieee80211n=1">>$hostapdconffile
 	if [ $fiveg = "1" ];
 	then 
-		sudo echo "ieee80211ac=1">>$hostapdconffile
-		sudo echo "channel=36">>$hostapdconffile
-		sudo echo "hw_mode=a">>$hostapdconffile
-		sudo echo "require_vht=1">>$hostapdconffile
-		sudo echo "vht_oper_chwidth=0">>$hostapdconffile
-		sudo echo "#vht_capab=[MAX-MPDU-11454][RXLDPC][SHORT-GI-80][TX-STBC-2BY1][RX-STBC-1]">>$hostapdconffile
-		sudo echo "#vht_oper_centr_freq_seg0_idx=62">>$hostapdconffile
+		 echo "ieee80211ac=1">>$hostapdconffile
+		 echo "channel=36">>$hostapdconffile
+		 echo "hw_mode=a">>$hostapdconffile
+		 echo "require_vht=1">>$hostapdconffile
+		 echo "vht_oper_chwidth=0">>$hostapdconffile
+		 echo "#vht_capab=[MAX-MPDU-11454][RXLDPC][SHORT-GI-80][TX-STBC-2BY1][RX-STBC-1]">>$hostapdconffile
+		 echo "#vht_oper_centr_freq_seg0_idx=62">>$hostapdconffile
 	else
-		sudo echo "channel=6">>$hostapdconffile
-		sudo echo "#ht_capab=[HT40-][SHORT-GI-40][DSSS_CCK-40]">>$hostapdconffile
-		sudo echo "ht_capab=[HT40]">>$hostapdconffile
-		sudo echo "hw_mode=g">>$hostapdconffile
-		sudo echo "#noscan=1">>$hostapdconffile
+		 echo "channel=6">>$hostapdconffile
+		 echo "#ht_capab=[HT40-][SHORT-GI-40][DSSS_CCK-40]">>$hostapdconffile
+		 echo "ht_capab=[HT40]">>$hostapdconffile
+		 echo "hw_mode=g">>$hostapdconffile
+		 echo "#noscan=1">>$hostapdconffile
 	fi
-	sudo echo "DAEMON_CONF=\"/etc/hostapd/hostapd.conf\"">>/etc/default/hostapd
+	 echo "DAEMON_CONF=\"/etc/hostapd/hostapd.conf\"">>/etc/default/hostapd
 	
 	echo "Done configuring hostapd.conf file"
 
-	sudo update-rc.d hostapd defaults && sudo update-rc.d hostapd enable &&	sudo service hostapd start
+	 update-rc.d hostapd defaults &&  update-rc.d hostapd enable &&	 service hostapd start
 	echo "Done configuring hostapd"
 fi
 
@@ -408,37 +409,61 @@ read input
 if [ $input = "1" ];
 then
 
-	echo "Please enter DHCP Server subnet (usually subnet for WLAN NIC)"
-	read subnet
-	echo "Please enter starting IP of DHCP range"
-	read startip
-	echo "Please enter ending IP of DHCP range"
-	read endip
-	echo "Please broadcast IP"
-	read broadcastip
+	#echo "Please enter DHCP Server subnet (usually subnet for WLAN NIC)"
+	#read subnet
+
+ 	#subnet=`echo $intstaticip | cut -d . -f 1-3`
+        #subnet=$subnet".0"
+	#echo "Using $subnet as subnet"
+
+	#echo "Please enter starting IP of DHCP range"
+	#read startip
+	#startip=`echo $intstaticip | cut -d . -f 1-3`
+        #startip=$startip".10"
+	#echo "Using $startip as stating ip"
+
+	#echo "Please enter ending IP of DHCP range"
+	#read endip
+       	#endip=`echo $intstaticip | cut -d . -f 1-3`
+        #endip=$endip".50"
+        #echo "Using $endip as ending ip"
+
+
+	#echo "Please broadcast IP"
+	#read broadcastip
+
+       	subnet=$(awk -F"." '{print $1"."$2"."$3".0"}'<<<$inetstaticip)
+        echo " using $subnet for subnet"
+
+        startip=$(awk -F"." '{print $1"."$2"."$3".10"}'<<<$inetstaticip)
+        echo "Using $startip as stating ip"
+
+        endip=$(awk -F"." '{print $1"."$2"."$3".50"}'<<<$inetstaticip)
+        echo "Using $endip as ending ip"
+
 
 	echo "Installing DHCP Server for DHCP and DNS Services on WLAN"
-	sudo apt-get -y install isc-dhcp-server
-	sudo cp $dhcpconffile /etc/dhcp/dhcpd.conf.$now
-	sudo rm -f $dhcpconffile
-	sudo echo "subnet $subnet netmask 255.255.255.0">>$dhcpconffile
+	 apt-get -y install isc-dhcp-server
+	 cp $dhcpconffile /etc/dhcp/dhcpd.conf.$now
+	 rm -f $dhcpconffile
+	 echo "subnet $subnet netmask 255.255.255.0">>$dhcpconffile
 
-	sudo echo "{">>$dhcpconffile
-	sudo echo "range $startip $endip;">>$dhcpconffile
-	sudo echo "option broadcast-address $broadcastip;">>$dhcpconffile
-	sudo echo "option routers $intstaticip;">>$dhcpconffile
-	sudo echo "default-lease-time 600;">>$dhcpconffile
-	sudo echo "max-lease-time 7200;">>$dhcpconffile
-	sudo echo "option domain-name-servers 8.8.8.8, 8.8.4.4;">>$dhcpconffile
-	sudo echo "}">>$dhcpconffile
-	sudo echo "authoritative;">>$dhcpconffile
+	 echo "{">>$dhcpconffile
+	 echo "range $startip $endip;">>$dhcpconffile
+	 echo "option broadcast-address $intnetbroadcast;">>$dhcpconffile
+	 echo "option routers $intstaticip;">>$dhcpconffile
+	 echo "default-lease-time 600;">>$dhcpconffile
+	 echo "max-lease-time 7200;">>$dhcpconffile
+	 echo "option domain-name-servers 8.8.8.8, 8.8.4.4;">>$dhcpconffile
+	 echo "}">>$dhcpconffile
+	 echo "authoritative;">>$dhcpconffile
 
-	sudo cp /etc/default/isc-dhcp-server /etc/default/isc-dhcp-server$now
-	sudo rm -f /etc/default/isc-dhcp-server
-	sudo echo "INTERFACES=br0">>/etc/default/isc-dhcp-server
+	 cp /etc/default/isc-dhcp-server /etc/default/isc-dhcp-server$now
+	 rm -f /etc/default/isc-dhcp-server
+	 echo "INTERFACES=br0">>/etc/default/isc-dhcp-server
 
-	sudo update-rc.d isc-dhcp-server enable
-	sudo service isc-dhcp-server start
+	 update-rc.d isc-dhcp-server enable
+	 service isc-dhcp-server start
 fi
 
 ##########################################################################################################################################################
@@ -451,17 +476,17 @@ read changesshport
 if [ $changesshport = "1" ]; then
 	echo "Please enter on which port you would like SSH Server to listen?"
 	read sshport
-	sudo echo "Port $sshport" >> /etc/ssh/sshd_config
-	sudo echo "PermitRootLogin no">> /etc/ssh/sshd_config 
-	sudo echo "Protocol 2">> /etc/ssh/sshd_config
-	sudo echo "IgnoreRhosts yes">> /etc/ssh/sshd_config
-	sudo echo "HostbasedAuthentication no">> /etc/ssh/sshd_config
-	sudo echo "PermitEmptyPasswords no">> /etc/ssh/sshd_config
+	 echo "Port $sshport" >> /etc/ssh/sshd_config
+	 echo "PermitRootLogin no">> /etc/ssh/sshd_config 
+	 echo "Protocol 2">> /etc/ssh/sshd_config
+	 echo "IgnoreRhosts yes">> /etc/ssh/sshd_config
+	 echo "HostbasedAuthentication no">> /etc/ssh/sshd_config
+	 echo "PermitEmptyPasswords no">> /etc/ssh/sshd_config
 	echo "Changed SSH Port"
 	echo "Reconfiguring OpenSSH Keys"
-	
-	sudo rm /etc/ssh/ssh_host_*
-	sudo dpkg-reconfigure openssh-server
+
+	 rm /etc/ssh/ssh_host_*
+	 dpkg-reconfigure openssh-server
 fi
 
 ##########################################################################################################################################################
@@ -472,10 +497,10 @@ echo "2) No"
 read fail2ban
 if [ $fail2ban = "1" ];
 then
-        sudo apt-get -y install fail2ban
-        sudo echo "installed fail2ban"
+         apt-get -y install fail2ban
+         echo "installed fail2ban"
         # copy the example configuration file and make it live
-        sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+         cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
         if [ -z "$sshport" ];
         then
                 sshportfail2ban=22
@@ -483,15 +508,15 @@ then
                 sshportfail2ban=$sshport
         fi
         #echo $sshportfail2ban
-        sudo echo "using $sshportfail2ban as ssh port"
-        sudo echo "[ssh]" >> /etc/fail2ban/jail.local
-        sudo echo "enabled = true" >> /etc/fail2ban/jail.local
-        sudo echo "port = $sshportfail2ban" >> /etc/fail2ban/jail.local
-        sudo echo "filter = sshd" >> /etc/fail2ban/jail.local
-        sudo echo "logpath = /var/log/auth.log" >> /etc/fail2ban/jail.local
-        sudo echo "banaction = iptables-allports ; ban retrys on any port" >> /etc/fail2ban/jail.local
-        sudo echo "bantime = 6000 ; ip address is banned for 10 minutes" >> /etc/fail2ban/jail.local
-        sudo echo "maxretry = 10 ; allow the ip address retry a max of 10 times" >> /etc/fail2ban/jail.local
+         echo "using $sshportfail2ban as ssh port"
+         echo "[ssh]" >> /etc/fail2ban/jail.local
+         echo "enabled = true" >> /etc/fail2ban/jail.local
+         echo "port = $sshportfail2ban" >> /etc/fail2ban/jail.local
+         echo "filter = sshd" >> /etc/fail2ban/jail.local
+         echo "logpath = /var/log/auth.log" >> /etc/fail2ban/jail.local
+         echo "banaction = iptables-allports ; ban retrys on any port" >> /etc/fail2ban/jail.local
+         echo "bantime = 6000 ; ip address is banned for 10 minutes" >> /etc/fail2ban/jail.local
+         echo "maxretry = 10 ; allow the ip address retry a max of 10 times" >> /etc/fail2ban/jail.local
 fi
 ##########################################################################################################################################################
 #configure firewall
@@ -502,42 +527,42 @@ read input
 if [ $input = "1" ];
 then
 	echo "setup firewall rules appropriately and startup script"
-	sudo sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
+	 sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
 	
-	sudo cp $rclocalfile /etc/rc.local$now
-	sudo rm -f $rclocalfile
+	 cp $rclocalfile /etc/rc.local$now
+	 rm -f $rclocalfile
 	touch $rclocalfile 
-	sudo sed -i 's/#exit 0/#exit 0/g' $rclocalfile
-	echo "sudo ifdown $wired_ext_nic">>$rclocalfile
-	echo "sudo ifup $wired_ext_nic">>$rclocalfile
+	 sed -i 's/#exit 0/#exit 0/g' $rclocalfile
+	echo " ifdown $wired_ext_nic">>$rclocalfile
+	echo " ifup $wired_ext_nic">>$rclocalfile
 	
 	echo "sleep 5">>$rclocalfile
-	echo "sudo ifdown br0">>$rclocalfile
-	echo "sudo ifup br0">>$rclocalfile
+	echo " ifdown br0">>$rclocalfile
+	echo " ifup br0">>$rclocalfile
 	echo "sleep 5">>$rclocalfile
-    echo "sudo ifconfig $wlan_int_nic | grep -q $wlan_int_nic && echo 'found $wlan_int_nic nothing to do'> /dev/kmsg || sudo /usr/bin/install-wifi ">>$rclocalfile
+    	echo " ifconfig $wlan_int_nic | grep -q $wlan_int_nic && echo 'found $wlan_int_nic nothing to do'> /dev/kmsg ||  /usr/bin/install-wifi ">>$rclocalfile
 	
-	echo "sudo hostapd -B /etc/hostapd/hostapd.conf">>$rclocalfile
+	echo " hostapd -B /etc/hostapd/hostapd.conf">>$rclocalfile
 	echo "sleep 5">>$rclocalfile
-	echo "sudo service isc-dhcp-server restart">>$rclocalfile
+	echo " service isc-dhcp-server restart">>$rclocalfile
 	echo "exit 0">>$rclocalfile
 
-	sudo iptables -F
-	sudo iptables -t nat -A POSTROUTING -o $wired_ext_nic -j MASQUERADE
-	sudo iptables -A FORWARD -i $wired_ext_nic -o br0 -m state --state RELATED,ESTABLISHED -j ACCEPT
-	sudo iptables -A FORWARD -i br0 -o $wired_ext_nic -j ACCEPT
-	sudo iptables -A OUTPUT -p tcp --tcp-flags ALL ALL -j DROP
-	sudo iptables -A OUTPUT -p tcp --tcp-flags ALL ACK,RST,SYN,FIN -j DROP
-	sudo iptables -A OUTPUT -p tcp --tcp-flags SYN,FIN SYN,FIN -j DROP
-	sudo iptables -A OUTPUT -p tcp --tcp-flags SYN,RST SYN,RST -j DROP
-	sudo iptables -A OUTPUT -p tcp --tcp-flags ALL NONE -j DROP
-	sudo iptables -A OUTPUT -i $wired_ext_nic -p icmp --icmp-type echo-request -j DROP
-	sudo rm -f /etc/iptables.ipv4.nat
-	sudo sh -c "iptables-save > /etc/iptables.ipv4.nat"
+	 iptables -F
+	 iptables -t nat -A POSTROUTING -o $wired_ext_nic -j MASQUERADE
+	 iptables -A FORWARD -i $wired_ext_nic -o br0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+	 iptables -A FORWARD -i br0 -o $wired_ext_nic -j ACCEPT
+	 iptables -A OUTPUT -p tcp --tcp-flags ALL ALL -j DROP
+	 iptables -A OUTPUT -p tcp --tcp-flags ALL ACK,RST,SYN,FIN -j DROP
+	 iptables -A OUTPUT -p tcp --tcp-flags SYN,FIN SYN,FIN -j DROP
+	 iptables -A OUTPUT -p tcp --tcp-flags SYN,RST SYN,RST -j DROP
+	 iptables -A OUTPUT -p tcp --tcp-flags ALL NONE -j DROP
+	 iptables -A OUTPUT -i $wired_ext_nic -p icmp --icmp-type echo-request -j DROP
+	 rm -f /etc/iptables.ipv4.nat
+	 sh -c "iptables-save > /etc/iptables.ipv4.nat"
 
-	#sudo sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
+	# sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
 
-	sudo echo "up iptables-restore < /etc/iptables.ipv4.nat">> /etc/network/interfaces
+	 echo "up iptables-restore < /etc/iptables.ipv4.nat">> /etc/network/interfaces
 
 	echo "Done setting up startup script with Firewall Rules"
 fi
@@ -554,7 +579,7 @@ then
 fi
 
 ##########################################################################################################################################################
-#Change sudo Password
+#Change  Password
 echo "Would you like to change root password?"
 echo "1) Yes"
 echo "2) No"
@@ -576,8 +601,8 @@ then
 fi
 
 ##########################################################################################################################################################
-#Configure users
-echo "Would you like to a new user?"
+#Add User
+echo "Would you like to a new user with  privileges?"
 echo "1) Yes"
 echo "2) No"
 read input
@@ -585,19 +610,22 @@ read input
 if [ $input = "1" ]; then
 	echo "Enter Username of new user"
 	read user
-	apt-get install sudo
+	apt-get install 
 	echo "adding user $user"
 	adduser $user 
-	adduser $user sudo
-	sudo usermod -a -G sudo $user
-	echo "Disable root account?"
-	echo "1) Yes"
-	echo "2) No"
-	read input
-	if [ $input = "1" ]; then
-		echo "disabling root user"
-		passwd -dl root
-	fi
+	adduser $user 
+	 usermod -a -G  $user
+fi
+
+##########################################################################################################################################################
+#Disable root account
+echo "Disable root account?"
+echo "1) Yes"
+echo "2) No"
+read input
+if [ $input = "1" ]; then
+	echo "disabling root user"
+       	passwd -dl root
 fi
 
 ##########################################################################################################################################################
@@ -692,14 +720,14 @@ then
 	
 	# Remove packages
 	for i in $pkgs; do
-		sudo apt-get -y remove --purge $i
+		 apt-get -y remove --purge $i
 	done
 
 	# Remove automatically installed dependency packages
-	sudo apt-get -y autoremove
+	 apt-get -y autoremove
 
 	echo "Done removing unnecessary packages and  updates"
-	#sudo reboot
+	# reboot
 fi
 
 ##########################################################################################################################################################
@@ -710,9 +738,9 @@ echo "2) No"
 read clearlogs
 if [ $clearlogs = "1" ];
 then
-	sudo apt-get autoremove && sudo apt-get clean && sudo apt-get autoclean
+	 apt-get autoremove &&  apt-get clean &&  apt-get autoclean
 	for logs in `find /var/log -type f`; do > $logs; done
-	sudo cat /dev/null > .bash_history
+	 cat /dev/null > .bash_history
 	history -cw
 	
 fi
@@ -727,10 +755,10 @@ read reboot
 if [ $reboot = "1" ];
 then
 	#echo "Updating and Upgrading Packages"
-	#sudo apt-get update
-	#sudo apt-get upgrade
+	# apt-get update
+	# apt-get upgrade
 	echo "Rebooting now!"
-	sudo reboot
+	 reboot
 else
 	exit 0 
 fi
