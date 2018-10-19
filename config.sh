@@ -67,7 +67,7 @@ read -r input
 if [ $input = "1" ];
 then
 	apt-get -y install raspi-config
-	raspi-config
+	 raspi-config
 fi
 
 ##########################################################################################################################################################
@@ -85,7 +85,7 @@ fi
 
 
 ############################################################################################################################################################
-#Disable Onboard WiFi 
+#Disable Onboard WiFi and Bluetooh
 rpi3=$(cat /proc/device-tree/model | grep -ie 'Raspberry Pi 3' | wc -l)
 if [ $rpi3 -ge 1 ];
 then
@@ -96,8 +96,9 @@ then
 	read input
 	if [ $input = "1" ];
 	then
-        	echo "blacklist brcmfmac" >> /etc/modprobe.d/brcmfmac.conf
+        #echo "blacklist brcmfmac" >> /etc/modprobe.d/brcmfmac.conf
 		rmmod brcmfmac
+		echo "dtoverlay=pi3-disable-wifi" >> /boot/config.txt
 		echo "Disabled Onboard Wifi"
 	fi
 	
@@ -119,7 +120,12 @@ then
 	read input
 	if [ $input = "1" ];
 	then
+		
 		echo "dtoverlay=pi3-disable-bt" >> /boot/config.txt
+		systemctl disable hciuart.service
+		systemctl disable bluealsa.service
+		systemctl disable bluetooth.service
+		echo "Disabled Onboard Bluetooh"
 	fi
 fi
 
@@ -133,7 +139,7 @@ echo "2) No"
 read input
 if [ $input = "1" ];
 then
-    	echo "Enter new hostname"
+    echo "Enter new hostname"
 	read hostname
 	echo $hostname > /etc/hostname
 fi
@@ -147,9 +153,9 @@ echo "2) No"
 read input
 if [ $input = "1" ];
 then
-     	wget http://www.fars-robotics.net/install-wifi -O /usr/bin/install-wifi
-     	chmod +x /usr/bin/install-wifi
-     	install-wifi
+     wget http://www.fars-robotics.net/install-wifi -O /usr/bin/install-wifi
+     chmod +x /usr/bin/install-wifi
+     install-wifi
 	sleep 3
 fi
 
@@ -163,10 +169,10 @@ read input
 if [ $input = "1" ];
 then	
 	# Get rpi-source
-	wget https://raw.githubusercontent.com/notro/rpi-source/master/rpi-source -O /usr/bin/rpi-source
+	 wget https://raw.githubusercontent.com/notro/rpi-source/master/rpi-source -O /usr/bin/rpi-source
 
 	# Make it executable
-	chmod +x /usr/bin/rpi-source
+	 chmod +x /usr/bin/rpi-source
 
 	# Tell the update mechanism that this is the latest version of the script
 	/usr/bin/rpi-source -q --tag-update
@@ -237,13 +243,13 @@ fi
 
 ##########################################################################################################################################################
 #configure internal network appropriately
-echo "Configure Internal Interface? (Note: Hostapd entry will point to /etc/hostapd/hostapd.conf) (Enter 1 or 2 or any other key to skip)"
-echo "1) Yes"
-echo "2) No"
+#echo "How will internal connection be configured? (Note: Hostapd entry will point to /etc/hostapd/hostapd.conf) (Enter 1 or 2 or any other key to skip)"
+#echo "1) Static"
+#echo "2) DHCP"
 
-read input
-if [ $input = "1" ];
-then
+#read input
+#if [ $input = "1" ];
+#then
 	echo "Config Bridge Interface"
 	echo "Enter Static IP Address for internal network"
 	read intstaticip
@@ -252,7 +258,7 @@ then
 	read intnetmask
 	
 	intnetbroadcast=$(awk -F"." '{print $1"."$2"."$3".0"}'<<<$inetstaticip)
-    	echo "Using $intnetbroadcast for subnet"
+    echo " using $intnetbroadcast for subnet"
 
 	#echo "hostapd /etc/hostapd/hostapd.conf">>$interfaces_file
 	echo "auto br0">>$interfaces_file	
@@ -268,7 +274,7 @@ then
 	echo "broadcast $intnetbroadcast">>$interfaces_file
 	echo "netmask $intnetmask">>$interfaces_file
 
-fi
+#fi
 
 
 ##########################################################################################################################################################
@@ -356,27 +362,26 @@ then
 	
 	
 	#Create Hostapd.conf file
-	cp $hostapdconffile /etc/hostapd/hostapd.conf.$now
-	echo "driver=nl80211">>$hostapdconffile
-	echo "#logger_syslog=-1">>$hostapdconffile
-	echo "#logger_syslog_level=2">>$hostapdconffile
-	echo "#logger_stdout=-1">>$hostapdconffile
-	echo "#logger_stdout_level=2">>$hostapdconffile
-	echo "interface=$wlan_int_nic">>$hostapdconffile
-	echo "bridge=br0">>$hostapdconffile
+	 cp $hostapdconffile /etc/hostapd/hostapd.conf.$now
+	 echo "driver=nl80211">>$hostapdconffile
+	 echo "#logger_syslog=-1">>$hostapdconffile
+	 echo "#logger_syslog_level=2">>$hostapdconffile
+	 echo "#logger_stdout=-1">>$hostapdconffile
+	 echo "#logger_stdout_level=2">>$hostapdconffile
+	 echo "interface=$wlan_int_nic">>$hostapdconffile
+	 echo "bridge=br0">>$hostapdconffile
 
-	echo "ssid=$SSID">>$hostapdconffile
-	echo "macaddr_acl=0">>$hostapdconffile
-	echo "auth_algs=1">>$hostapdconffile
-	echo "ignore_broadcast_ssid=0">>$hostapdconffile
-	echo "wpa=2">>$hostapdconffile
-	echo "wpa_passphrase=$wifipass">>$hostapdconffile
-	echo "wpa_key_mgmt=WPA-PSK">>$hostapdconffile
-	echo "wpa_pairwise=CCMP">>$hostapdconffile
-	echo "require_ht=1">>$hostapdconffile
-	echo "wmm_enabled=1">>$hostapdconffile
-	echo "ieee80211n=1">>$hostapdconffile
-	
+	 echo "ssid=$SSID">>$hostapdconffile
+	 echo "macaddr_acl=0">>$hostapdconffile
+	 echo "auth_algs=1">>$hostapdconffile
+	 echo "ignore_broadcast_ssid=0">>$hostapdconffile
+	 echo "wpa=2">>$hostapdconffile
+	 echo "wpa_passphrase=$wifipass">>$hostapdconffile
+	 echo "wpa_key_mgmt=WPA-PSK">>$hostapdconffile
+	 echo "wpa_pairwise=CCMP">>$hostapdconffile
+	 echo "require_ht=1">>$hostapdconffile
+	 echo "wmm_enabled=1">>$hostapdconffile
+	 echo "ieee80211n=1">>$hostapdconffile
 	if [ $fiveg = "1" ];
 	then 
 		 echo "ieee80211ac=1">>$hostapdconffile
@@ -393,11 +398,11 @@ then
 		 echo "hw_mode=g">>$hostapdconffile
 		 echo "#noscan=1">>$hostapdconffile
 	fi
-	echo "DAEMON_CONF=\"/etc/hostapd/hostapd.conf\"">>/etc/default/hostapd
+	 echo "DAEMON_CONF=\"/etc/hostapd/hostapd.conf\"">>/etc/default/hostapd
 	
 	echo "Done configuring hostapd.conf file"
 
-	update-rc.d hostapd defaults &&  update-rc.d hostapd enable && service hostapd start
+	 update-rc.d hostapd defaults &&  update-rc.d hostapd enable &&	 service hostapd start
 	echo "Done configuring hostapd"
 fi
 
@@ -444,133 +449,133 @@ then
 
 
 	echo "Installing DHCP Server for DHCP and DNS Services on WLAN"
-	apt-get -y install isc-dhcp-server
-	cp $dhcpconffile /etc/dhcp/dhcpd.conf.$now
-	rm -f $dhcpconffile
-	echo "subnet $subnet netmask 255.255.255.0">>$dhcpconffile
+	 apt-get -y install isc-dhcp-server
+	 cp $dhcpconffile /etc/dhcp/dhcpd.conf.$now
+	 rm -f $dhcpconffile
+	 echo "subnet $subnet netmask 255.255.255.0">>$dhcpconffile
 
-	echo "{">>$dhcpconffile
-	echo "range $startip $endip;">>$dhcpconffile
-	echo "option broadcast-address $intnetbroadcast;">>$dhcpconffile
-	echo "option routers $intstaticip;">>$dhcpconffile
-	echo "default-lease-time 600;">>$dhcpconffile
-	echo "max-lease-time 7200;">>$dhcpconffile
-	echo "option domain-name-servers 8.8.8.8, 8.8.4.4;">>$dhcpconffile
-	echo "}">>$dhcpconffile
-	echo "authoritative;">>$dhcpconffile
+	 echo "{">>$dhcpconffile
+	 echo "range $startip $endip;">>$dhcpconffile
+	 echo "option broadcast-address $intnetbroadcast;">>$dhcpconffile
+	 echo "option routers $intstaticip;">>$dhcpconffile
+	 echo "default-lease-time 600;">>$dhcpconffile
+	 echo "max-lease-time 7200;">>$dhcpconffile
+	 echo "option domain-name-servers 8.8.8.8, 8.8.4.4;">>$dhcpconffile
+	 echo "}">>$dhcpconffile
+	 echo "authoritative;">>$dhcpconffile
 
-	cp /etc/default/isc-dhcp-server /etc/default/isc-dhcp-server$now
-	rm -f /etc/default/isc-dhcp-server
-	echo "INTERFACES=br0">>/etc/default/isc-dhcp-server
-	update-rc.d isc-dhcp-server enable
-	service isc-dhcp-server start
+	 cp /etc/default/isc-dhcp-server /etc/default/isc-dhcp-server$now
+	 rm -f /etc/default/isc-dhcp-server
+	 echo "INTERFACES=br0">>/etc/default/isc-dhcp-server
+
+	 update-rc.d isc-dhcp-server enable
+	 service isc-dhcp-server start
 fi
 
 ##########################################################################################################################################################
 #Configure sshd including new port
 
-echo "Would you like to change default SSH port and reconfigure SSH keys? (Enter 1 or 2 or any other key to skip)"
+echo "Would you like to change default SSH port and reconfigure SSH keys?"
 echo "1) Yes"
 echo "2) No"
 read changesshport
 if [ $changesshport = "1" ]; then
 	echo "Please enter on which port you would like SSH Server to listen?"
 	read sshport
-	echo "Port $sshport" >> /etc/ssh/sshd_config
-	echo "PermitRootLogin no">> /etc/ssh/sshd_config 
-	echo "Protocol 2">> /etc/ssh/sshd_config
-	echo "IgnoreRhosts yes">> /etc/ssh/sshd_config
-	echo "HostbasedAuthentication no">> /etc/ssh/sshd_config
-	echo "PermitEmptyPasswords no">> /etc/ssh/sshd_config
+	 echo "Port $sshport" >> /etc/ssh/sshd_config
+	 echo "PermitRootLogin no">> /etc/ssh/sshd_config 
+	 echo "Protocol 2">> /etc/ssh/sshd_config
+	 echo "IgnoreRhosts yes">> /etc/ssh/sshd_config
+	 echo "HostbasedAuthentication no">> /etc/ssh/sshd_config
+	 echo "PermitEmptyPasswords no">> /etc/ssh/sshd_config
 	echo "Changed SSH Port"
 	echo "Reconfiguring OpenSSH Keys"
 
-	rm /etc/ssh/ssh_host_*
-	dpkg-reconfigure openssh-server
+	 rm /etc/ssh/ssh_host_*
+	 dpkg-reconfigure openssh-server
 fi
 
 ##########################################################################################################################################################
 #Configure fail2ban
-echo "Would you like to install Fail2Ban? (Enter 1 or 2 or any other key to skip)" 
+echo "Would you like to install Fail2Ban?" 
 echo "1) Yes" 
 echo "2) No"
 read fail2ban
 if [ $fail2ban = "1" ];
 then
-        apt-get -y install fail2ban
-        echo "installed fail2ban"
+         apt-get -y install fail2ban
+         echo "installed fail2ban"
         # copy the example configuration file and make it live
-        cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+         cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
         if [ -z "$sshport" ];
         then
                 sshportfail2ban=22
         else
                 sshportfail2ban=$sshport
         fi
-        
-	#echo $sshportfail2ban
-        echo "using $sshportfail2ban as ssh port"
-        echo "[ssh]" >> /etc/fail2ban/jail.local
-        echo "enabled = true" >> /etc/fail2ban/jail.local
-        echo "port = $sshportfail2ban" >> /etc/fail2ban/jail.local
-        echo "filter = sshd" >> /etc/fail2ban/jail.local
-        echo "logpath = /var/log/auth.log" >> /etc/fail2ban/jail.local
-        echo "banaction = iptables-allports ; ban retrys on any port" >> /etc/fail2ban/jail.local
-        echo "bantime = 6000 ; ip address is banned for 10 minutes" >> /etc/fail2ban/jail.local
-        echo "maxretry = 10 ; allow the ip address retry a max of 10 times" >> /etc/fail2ban/jail.local
+        #echo $sshportfail2ban
+         echo "using $sshportfail2ban as ssh port"
+         echo "[ssh]" >> /etc/fail2ban/jail.local
+         echo "enabled = true" >> /etc/fail2ban/jail.local
+         echo "port = $sshportfail2ban" >> /etc/fail2ban/jail.local
+         echo "filter = sshd" >> /etc/fail2ban/jail.local
+         echo "logpath = /var/log/auth.log" >> /etc/fail2ban/jail.local
+         echo "banaction = iptables-allports ; ban retrys on any port" >> /etc/fail2ban/jail.local
+         echo "bantime = 6000 ; ip address is banned for 10 minutes" >> /etc/fail2ban/jail.local
+         echo "maxretry = 10 ; allow the ip address retry a max of 10 times" >> /etc/fail2ban/jail.local
 fi
 ##########################################################################################################################################################
 #configure firewall
-echo "Configure Firewall? (Enter 1 or 2 or any other key to skip)"
+echo "Configure Firewall? (Enter 1 or 2)"
 echo "1) Yes"
 echo "2) No"
 read input
 if [ $input = "1" ];
 then
 	echo "setup firewall rules appropriately and startup script"
-	sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
+	 sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
 	
-	cp $rclocalfile /etc/rc.local$now
-	rm -f $rclocalfile
+	 cp $rclocalfile /etc/rc.local$now
+	 rm -f $rclocalfile
 	touch $rclocalfile 
-	sed -i 's/#exit 0/#exit 0/g' $rclocalfile
+	 sed -i 's/#exit 0/#exit 0/g' $rclocalfile
 	echo " ifdown $wired_ext_nic">>$rclocalfile
 	echo " ifup $wired_ext_nic">>$rclocalfile
 	
-	echo "sleep 3">>$rclocalfile
+	echo "sleep 5">>$rclocalfile
 	echo " ifdown br0">>$rclocalfile
 	echo " ifup br0">>$rclocalfile
-	echo "sleep 3">>$rclocalfile
+	echo "sleep 5">>$rclocalfile
     	echo " ifconfig $wlan_int_nic | grep -q $wlan_int_nic && echo 'found $wlan_int_nic nothing to do'> /dev/kmsg ||  /usr/bin/install-wifi ">>$rclocalfile
 	
 	echo " hostapd -B /etc/hostapd/hostapd.conf">>$rclocalfile
-	echo "sleep 3">>$rclocalfile
+	echo "sleep 5">>$rclocalfile
 	echo " service isc-dhcp-server restart">>$rclocalfile
 	echo "exit 0">>$rclocalfile
 
-	iptables -F
-	iptables -t nat -A POSTROUTING -o $wired_ext_nic -j MASQUERADE
-	iptables -A FORWARD -i $wired_ext_nic -o br0 -m state --state RELATED,ESTABLISHED -j ACCEPT
-	iptables -A FORWARD -i br0 -o $wired_ext_nic -j ACCEPT
-	iptables -A OUTPUT -p tcp --tcp-flags ALL ALL -j DROP
-	iptables -A OUTPUT -p tcp --tcp-flags ALL ACK,RST,SYN,FIN -j DROP
-	iptables -A OUTPUT -p tcp --tcp-flags SYN,FIN SYN,FIN -j DROP
-	iptables -A OUTPUT -p tcp --tcp-flags SYN,RST SYN,RST -j DROP
-	iptables -A OUTPUT -p tcp --tcp-flags ALL NONE -j DROP
-	iptables -A OUTPUT -i $wired_ext_nic -p icmp --icmp-type echo-request -j DROP
-	rm -f /etc/iptables.ipv4.nat
-	sh -c "iptables-save > /etc/iptables.ipv4.nat"
+	 iptables -F
+	 iptables -t nat -A POSTROUTING -o $wired_ext_nic -j MASQUERADE
+	 iptables -A FORWARD -i $wired_ext_nic -o br0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+	 iptables -A FORWARD -i br0 -o $wired_ext_nic -j ACCEPT
+	 iptables -A OUTPUT -p tcp --tcp-flags ALL ALL -j DROP
+	 iptables -A OUTPUT -p tcp --tcp-flags ALL ACK,RST,SYN,FIN -j DROP
+	 iptables -A OUTPUT -p tcp --tcp-flags SYN,FIN SYN,FIN -j DROP
+	 iptables -A OUTPUT -p tcp --tcp-flags SYN,RST SYN,RST -j DROP
+	 iptables -A OUTPUT -p tcp --tcp-flags ALL NONE -j DROP
+	 iptables -A OUTPUT -i $wired_ext_nic -p icmp --icmp-type echo-request -j DROP
+	 rm -f /etc/iptables.ipv4.nat
+	 sh -c "iptables-save > /etc/iptables.ipv4.nat"
 
 	# sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
 
-	echo "up iptables-restore < /etc/iptables.ipv4.nat">> /etc/network/interfaces
+	 echo "up iptables-restore < /etc/iptables.ipv4.nat">> /etc/network/interfaces
 
 	echo "Done setting up startup script with Firewall Rules"
 fi
 
 ##########################################################################################################################################################
 #Change current user Password
-echo "Would you like to change current user's password? (Enter 1 or 2 or any other key to skip)"
+echo "Would you like to change current user's password?"
 echo "1) Yes"
 echo "2) No"
 read changepass
@@ -581,7 +586,7 @@ fi
 
 ##########################################################################################################################################################
 #Change  Password
-echo "Would you like to change root password? (Enter 1 or 2 or any other key to skip)"
+echo "Would you like to change root password?"
 echo "1) Yes"
 echo "2) No"
 read changepass
@@ -603,7 +608,7 @@ fi
 
 ##########################################################################################################################################################
 #Add User
-echo "Would you like to a new user with  privileges? (Enter 1 or 2 or any other key to skip)"
+echo "Would you like to a new user with  privileges?"
 echo "1) Yes"
 echo "2) No"
 read input
@@ -615,12 +620,12 @@ if [ $input = "1" ]; then
 	echo "adding user $user"
 	adduser $user 
 	adduser $user 
-	usermod -a -G  $user
+	 usermod -a -G  $user
 fi
 
 ##########################################################################################################################################################
 #Disable root account
-echo "Disable root account? (Enter 1 or 2 or any other key to skip)"
+echo "Disable root account?"
 echo "1) Yes"
 echo "2) No"
 read input
@@ -631,7 +636,7 @@ fi
 
 ##########################################################################################################################################################
 #Remove unnecessary packages
-echo "Remove Unnecessary packages? (Enter 1 or 2) (Enter 1 or 2 or any other key to skip)"
+echo "Remove Unnecessary packages? (Enter 1 or 2)"
 echo "1) Yes"
 echo "2) No"
 read input
@@ -733,21 +738,23 @@ fi
 
 ##########################################################################################################################################################
 #Clear logs
-echo "Would you like to clear logs and clean up system? (Enter 1 or 2 or any other key to skip)"
+echo "Would you like to clear logs and clean up system?"
 echo "1) Yes"
 echo "2) No"
 read clearlogs
 if [ $clearlogs = "1" ];
 then
-	apt-get autoremove &&  apt-get clean &&  apt-get autoclean
+	 apt-get autoremove &&  apt-get clean &&  apt-get autoclean
 	for logs in `find /var/log -type f`; do > $logs; done
-	cat /dev/null > .bash_history
+	 cat /dev/null > .bash_history
 	history -cw
+	
 fi
+
 
 ##########################################################################################################################################################
 #Finish up
-echo "Config complete, would you like to reboot? (Enter 1 or 2 or any other key to skip)"
+echo "Config complete, would you like to reboot?"
 echo "1) Yes"
 echo "2) No"
 read reboot
@@ -757,7 +764,7 @@ then
 	# apt-get update
 	# apt-get upgrade
 	echo "Rebooting now!"
-	reboot
+	 reboot
 else
 	exit 0 
 fi
