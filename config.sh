@@ -243,13 +243,13 @@ fi
 
 ##########################################################################################################################################################
 #configure internal network appropriately
-#echo "How will internal connection be configured? (Note: Hostapd entry will point to /etc/hostapd/hostapd.conf) (Enter 1 or 2 or any other key to skip)"
-#echo "1) Static"
-#echo "2) DHCP"
+echo "Configure bridge (internal) interface? (Note: Hostapd entry will point to /etc/hostapd/hostapd.conf) (Enter 1 or 2 or any other key to skip)"
+echo "1) Yes"
+echo "2) No"
 
-#read input
-#if [ $input = "1" ];
-#then
+read input
+if [ $input = "1" ];
+then
 	echo "Config Bridge Interface"
 	echo "Enter Static IP Address for internal network"
 	read intstaticip
@@ -274,7 +274,7 @@ fi
 	echo "broadcast $intnetbroadcast">>$interfaces_file
 	echo "netmask $intnetmask">>$interfaces_file
 
-#fi
+fi
 
 
 ##########################################################################################################################################################
