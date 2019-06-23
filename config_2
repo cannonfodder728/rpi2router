@@ -652,6 +652,7 @@ function mainMenu {
 		"8)" "Disable root account" \
 		"9)" "Clear Logs" \
 		"10)" "Reboot"  3>&2 2>&1 1>&3
+		"11)" "Exit"
 	)
 
 #order setTime->Disable Onboard Radios->Enable Serial->Change Hostname->Install Wifi Drivers->select interfaces->configure interfaces->config bridge->config external->install hostapd->config dhcp->change default ssh port->configure fail2ban->configure firewall->change current user password->change root password->disable root account-> remove unncessary packages->clear logs->reboot	
@@ -720,6 +721,9 @@ function mainMenu {
 		"10)") 
 			echo 10
 			reboot
+		"11)")
+			echo 11
+			exit
 		;;
 			
 	esac
