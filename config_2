@@ -6,7 +6,7 @@ dhcpconffile="/etc/dhcp/dhcpd.conf"
 rclocalfile="/etc/rc.local"
 now=$(date +"%m_%d_%Y_%H_%M_%S")
 
-
+count=0
 if ! [ $(id -u) = 0 ]; then
    echo "I am not root!"
    exit 1
@@ -96,7 +96,7 @@ function setInterfaces()
 
 function getInterfaces ()
 {
-	local count=0
+	#local count=0
 	#echo "The following interfaces were found on your Pi"
 	for f in /sys/class/net/*; do
 	    	dev=$(basename $f)
@@ -361,8 +361,12 @@ function configInterfaces ()
 	wlan_int_nic=$(getInterfaces "WLAN interface")
 	echo $wlan_int_nic" selected as WLAN Interface"
 
-	wired_int_nic=$(getInterfaces "Wired Internal Interface")
-	echo $wired_int_nic" selected as Wired Internal Interface"
+	if [ $count -gt 3 ]
+	then
+
+		wired_int_nic=$(getInterfaces "Wired Internal Interface")
+		echo $wired_int_nic" selected as Wired Internal Interface"
+	fi
 }
 
 function configBridge ()
