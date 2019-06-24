@@ -8,7 +8,7 @@ now=$(date +"%m_%d_%Y_%H_%M_%S")
 
 count=0
 if ! [ $(id -u) = 0 ]; then
-   echo "I am not root!"
+   echo "Please execute as root!"
    exit 1
 fi
 
@@ -67,6 +67,7 @@ function exitCode()
 		whiptail --title "Done" --msgbox "Successfully completed $1." 8 78   		
 	else
    		whiptail --title "Done" --msgbox "Failed $1." 8 78   		
+		exit
 	fi
 }
 
@@ -93,7 +94,6 @@ function setInterfaces()
 	    	echo "wlan nic variable not seting using $wired_int_nic"
 	fi
 }
-
 function getInterfaces ()
 {
 	#local count=0
@@ -117,19 +117,34 @@ function getInterfaces ()
 
 	done
 
-	#whiptailstr=${whiptailstr:0:-3}
-	#echo $whiptailstr
 	var=$(whiptail --title "Radio $1" --menu "Select $1 Interface" 20 78 $count $whiptailstr 3>&1 1>&2 2>&3)
-	#whiptail --title 'Radio list example' --radiolist 'Use Space Bar to select Interface' 20 78 $count $whiptailstr 3>&1 1>&2 2>&3
-	#echo $var
-	exitstatus=$?
-	if [ $exitstatus = 0 ]; then
-	    	#echo "The chosen distro is:" $var
-		echo $var
-	else
-		#return 0	    
-		echo "You chose Cancel."
+	echo $var
+
+}
+
+function configssh ()
+{
+        if (whiptail --title "Config SSH" --yesno "Do you want to change default ssh port?" 8 78); then
+	        sshport=$(whiptail --inputbox "Enter SSH Port" 8 78 Blue --title "Change default SSH Port" 3>&1 1>&2 2>&3)
+		echo "Port $sshport" >> /etc/ssh/sshd_config
+	 	echo "PermitRootLogin no">> /etc/ssh/sshd_config 
+	 	echo "Protocol 2">> /etc/ssh/sshd_config
+	 	echo "IgnoreRhosts yes">> /etc/ssh/sshd_config
+	 	echo "HostbasedAuthentication no">> /etc/ssh/sshd_config
+	 	echo "PermitEmptyPasswords no">> /etc/ssh/sshd_config
+		echo "Changed SSH Port"
+		echo "Reconfiguring OpenSSH Keys"
+
+	 	rm /etc/ssh/ssh_host_*
+		dpkg-reconfigure openssh-server
+
+	#else
+		#echo ""
+		#configFail2Ban
+	#fi
+        	exitCode "Config SSH"
 	fi
+
 }
 
 function setTime ()
@@ -139,10 +154,16 @@ function setTime ()
 		echo 'Attempting to set time'
 		apt-get -y install dpkg-reconfigure
 		dpkg-reconfigure tzdata
+	#	exitCode "Set Time"
+		#disableRadios
+	#else
+                #echo ""
 		exitCode "Set Time"
-	else
-		mainMenu	
-	fi	
+		#mainMenu
+		#disableRadios	
+	fi
+        #exitCode "Set Time"
+	
 }
 
 
@@ -168,13 +189,13 @@ function disableRadios ()
 			systemctl disable bluetooth.service
 			
 			exitCode "Disabled Onboard Bluetooh and Wifi"		
-		else
-			mainMenu	
+		#else
+	#		mainMenu	
 		fi	
-	else
-		whiptail --title "RPI3 Not Detected" --msgbox "Couldnt detect this as RPI3 or no onboard radios were enabled." 8 78	
-		mainMenu	
+		#enableSerial
+		#mainMenu	
 	fi
+     # exitCode "Enable Serial Console"
 }
 
 function enableSerial ()
@@ -184,9 +205,16 @@ function enableSerial ()
 		echo "enable_uart=1" >> /boot/config.txt
 		exitCode "Enable Serial Console"			
 		
-	else
-		mainMenu	
+	#else
+                exitCode "Enable Serial Console"
+
+		#mainMenu
+		#changeHostname
+	#	echo ""	
 	fi
+
+                #exitCode "Enable Serial Console"
+
 }
 
 
@@ -198,9 +226,13 @@ function changeHostname ()
 		echo $hostname > /etc/hostname
 		exitCode "Change HostName"
 		
-	else
-		mainMenu	
+	#else
+			#mainMenu
+		#installWiFi
+		#return	
 	fi
+        #exitCode "Change HostName"
+
 }
 
 function installWiFi ()
@@ -212,19 +244,23 @@ function installWiFi ()
 		sleep 3
 		exitCode "Install Wifi"
 		
-	else
-		mainMenu	
+	#else
+	#	echo ""
+		#configInterfaces
+		#mainMenu	
 	fi
+        #exitCode "Install WiFi"
+
 }
 
-function installF2Ban ()
+function installFail2Ban ()
 {
 	if (whiptail --title "Install Fail2Ban" --yesno "Do you want to install Fail2Ban?" 8 78); then
 		apt-get -y install fail2ban
 		echo "installed fail2ban"
 		
 		# copy the example configuration file and make it live
-		cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+h		cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
 		if [ -z "$sshport" ];
 		then
 		        sshportfail2ban=22
@@ -244,10 +280,13 @@ function installF2Ban ()
 		echo "maxretry = 10 ; allow the ip address retry a max of 10 times" >> /etc/fail2ban/jail.local
 		exitCode "Install Fail2Ban"
 		
-	else
-		mainMenu	
+	#else
+	#	echo ""
+		#mainMenu
+		#configFireWall	
+#	fi
+        	exitCode "Install Fail2Ban"
 	fi
-
 }
 
 function changeCurrUserPass ()
@@ -255,13 +294,19 @@ function changeCurrUserPass ()
 
     	if (whiptail --title "Change current user password" --yesno "Do you want to change current user password?" 8 78); then
 		passwd
-		exitCode "Change current user password"
+	#	exitCode "Change current user password"
 		
-	else
-		mainMenu	
+	#else
+	#	echo ""
+		#changeRootPass
+		#mainMenu	
+	#fi
+        	exitCode "Change current user password"
 	fi
 }
 #if [ $input = "1" ];
+
+
 function changeRootPass ()
 {
    	if (whiptail --title "Root password" --yesno "Do you want to change root password?" 8 78); then
@@ -284,26 +329,30 @@ function changeRootPass ()
 
 		fi
 		exitCode "Change root pass"
-	else
-		mainMenu	
+	#else
+	#	echo ""
+		#disableroot
+		#mainMenu	
+	#fi
+        exitCode "Change Root Pass"
 	fi
-
 }
 
 function disableRoot ()
 {
    	if (whiptail --title "Root password" --yesno "Do you want to disable root account?" 8 78); then
 		echo "disabling root user"
-		#passwd -dl root
+		passwd -dl root
 		exitCode "Disable root account"
-		
-	else
-		mainMenu	
+	#else
+	#	echo ""	
+		#clearLogs
+		#mainMenu	
 	fi
-
+        #exitCode "Disable Root"
 }
 
-function configFirewall ()
+function configFireWall ()
 {
 	#if (whiptail --title "Configure Firewall" --yesno "Do you want to configure firewall?" 8 78); then
 		echo "setup firewall rules appropriately and startup script"
@@ -346,11 +395,7 @@ function configFirewall ()
 
 		#echo "Done setting up startup script with Firewall Rules"
 		exitCode "Configure Firewall"
-	#	mainMenu
-	#else
-#		mainMenu	
-	#fi
-
+	#changeCurrUserPass
 }
 
 function configInterfaces ()
@@ -360,13 +405,15 @@ function configInterfaces ()
 
 	wlan_int_nic=$(getInterfaces "WLAN interface")
 	echo $wlan_int_nic" selected as WLAN Interface"
-
+	wired_int_nic=""
 	if [ $count -gt 3 ]
 	then
 
 		wired_int_nic=$(getInterfaces "Wired Internal Interface")
 		echo $wired_int_nic" selected as Wired Internal Interface"
 	fi
+	exitCode "Config Interfaces"
+	#configBridge
 }
 
 function configBridge ()
@@ -380,7 +427,7 @@ function configBridge ()
 	#read intnetmask
 	intnetmask=$(whiptail --inputbox "Enter Netmask for internal interface" 8 78 Blue --title "Config Bridge/Internal Interface" 3>&1 1>&2 2>&3)
 	
-	intnetbroadcast=$(awk -F"." '{print $1"."$2"."$3".0"}'<<<$inetstaticip)
+	intnetbroadcast=$(awk -F"." '{print $1"."$2"."$3".0"}'<<<$intstaticip)
     	#echo "using $intnetbroadcast for subnet"
 	
 	whiptail --title "Config Bridge Interface" --msgbox "Using $intnetbroadcast for subnet" 8 78
@@ -398,30 +445,33 @@ function configBridge ()
 	echo "address $intstaticip">>$interfaces_file
 	echo "broadcast $intnetbroadcast">>$interfaces_file
 	echo "netmask $intnetmask">>$interfaces_file
+        exitCode "Config Bridge"
+
+	#configExternalInt
 }
 
-function configExternalInt () 
+function configExternalInt ()
 {
 
-	CHOICE=$(
-	whiptail --title "Configure External Interface" --menu "How will external (Internet/WAN) connection be configured?" 16 100 15 \
-		"1)" "Static"   \
-		"2)" "DHCP"  \ 3>&2 2>&1 1>&3
-	)
+	CHOICE=$(whiptail --title "Configure External Interface" --radiolist \
+	"How will external interface be configured?" 15 60 4 \
+	"static" "Enter IP info manually" OFF \
+	"dhcp" "IP automically assigned by ISP" ON 3>&1 1>&2 2>&3)
 
-	#echo "How will external (Internet/WAN) connection be configured? (Enter 1 or 2 or any other key to skip)"
-	#echo "1) Static"
-	#echo "2) DHCP"
+	exitstatus=$?
+	if [ $exitstatus = 0 ]; then
+	    echo "The chosen distro is:" $CHOICE
+	else
+	    echo "You chose Cancel."
+	fi
 
-	#read input
-#if [ $input = "1" ];
-	if [ $CHOICE = "1)" ];
+	if [ $CHOICE = "static" ];
 	then
 		#echo "Config Wired using static"
 		#echo "Enter Static IP Address"
 		#read wiredstaticip
 		wiredstaticip=$(whiptail --inputbox "Enter Static IP Address for External Interface" 8 78 Blue --title "Config External Interface" 3>&1 1>&2 2>&3)
-	
+
 		#echo "Enter Netmask"
 		#read wirednetmask
 		wirednetmask=$(whiptail --inputbox "Enter Netmask for External Interface" 8 78 Blue --title "Config External Interface" 3>&1 1>&2 2>&3)
@@ -443,6 +493,8 @@ function configExternalInt ()
 		echo "iface $wired_ext_nic inet dhcp">>$interfaces_file
 			
 	fi	
+	exitCode "Config External Interface"
+	#configHostapd
 }
 
 
@@ -537,7 +589,7 @@ function configHostapd ()
 		exitCode "Install hostapd"
 		echo "Done configuring hostapd"
 	fi
-
+	#configDHCP
 }
 
 function configDHCP ()
@@ -604,6 +656,7 @@ function configDHCP ()
 	update-rc.d isc-dhcp-server enable
 	service isc-dhcp-server start
 	exitCode "Install DHCP Server"
+	#configSSH
 }
 function clearLogs ()
 {
@@ -620,7 +673,8 @@ function clearLogs ()
 		history -cw
 		exitCode "Clear Logs"
 	else
-		mainMenu	
+		reboot
+		#mainMenu	
 	fi
 
 }
@@ -651,7 +705,7 @@ function mainMenu {
 		"7)" "Change root password" \
 		"8)" "Disable root account" \
 		"9)" "Clear Logs" \
-		"10)" "Reboot"  3>&2 2>&1 1>&3
+		"10)" "Reboot"  3>&2 2>&1 1>&3\
 		"11)" "Exit"
 	)
 
@@ -662,7 +716,7 @@ function mainMenu {
 			disableRadios
 			enableSerial
 			changeHostname
-			installWifi
+			installWiFi
 			configInterfaces
 			configBridge
 			configExternalInt
@@ -699,7 +753,7 @@ function mainMenu {
 
 		"5)")
 			echo 5	
-			installWifi	
+			installWiFi	
 		;;
 
 		"6)")
@@ -721,6 +775,7 @@ function mainMenu {
 		"10)") 
 			echo 10
 			reboot
+		;;
 		"11)")
 			echo 11
 			exit
