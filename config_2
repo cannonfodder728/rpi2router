@@ -12,11 +12,12 @@ if ! [ $(id -u) = 0 ]; then
    exit 1
 fi
 
-: '
 echo "Updating System...Standby"
 #Install required utils
 
 apt-get -y update
+apt-get -y upgrade
+apt-get -y dist-upgrade
 
 pkgs="
 	raspi-config
