@@ -126,7 +126,7 @@ function getInterfaces ()
 function configssh ()
 {
         if (whiptail --title "Config SSH" --yesno "Do you want to change default ssh port?" 8 78); then
-	        sshport=$(whiptail --inputbox "Enter SSH Port" 8 78 Blue --title "Change default SSH Port" 3>&1 1>&2 2>&3)
+	        sshport=$(whiptail --inputbox "Enter SSH Port" 8 78 19810 --title "Change default SSH Port" 3>&1 1>&2 2>&3)
 		echo "Port $sshport" >> /etc/ssh/sshd_config
 	 	echo "PermitRootLogin no">> /etc/ssh/sshd_config 
 	 	echo "Protocol 2">> /etc/ssh/sshd_config
@@ -282,7 +282,7 @@ function installFail2Ban ()
 		echo "installed fail2ban"
 		
 		# copy the example configuration file and make it live
-h		cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+		cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
 		if [ -z "$sshport" ];
 		then
 		        sshportfail2ban=22
@@ -443,11 +443,11 @@ function configBridge ()
 	#echo "Config Bridge Interface"
 	#echo "Enter Static IP Address for internal network"
 	#read intstaticip
-	intstaticip=$(whiptail --inputbox "Enter Static IP Address for internal interface" 8 78 Blue --title "Config Bridge/Internal Interface" 3>&1 1>&2 2>&3)
+	intstaticip=$(whiptail --inputbox "Enter Static IP Address for internal interface" 8 78 192.168.10.1 --title "Config Bridge/Internal Interface" 3>&1 1>&2 2>&3)
 	
 	#echo "Enter Netmask for internal network"
 	#read intnetmask
-	intnetmask=$(whiptail --inputbox "Enter Netmask for internal interface" 8 78 Blue --title "Config Bridge/Internal Interface" 3>&1 1>&2 2>&3)
+	intnetmask=$(whiptail --inputbox "Enter Netmask for internal interface" 8 78 255.255.255.0 --title "Config Bridge/Internal Interface" 3>&1 1>&2 2>&3)
 	
 	intnetbroadcast=$(awk -F"." '{print $1"."$2"."$3".0"}'<<<$intstaticip)
     	#echo "using $intnetbroadcast for subnet"
@@ -492,17 +492,17 @@ function configExternalInt ()
 		#echo "Config Wired using static"
 		#echo "Enter Static IP Address"
 		#read wiredstaticip
-		wiredstaticip=$(whiptail --inputbox "Enter Static IP Address for External Interface" 8 78 Blue --title "Config External Interface" 3>&1 1>&2 2>&3)
+		wiredstaticip=$(whiptail --inputbox "Enter Static IP Address for External Interface" 8 78 10.0.0.2 --title "Config External Interface" 3>&1 1>&2 2>&3)
 
 		#echo "Enter Netmask"
 		#read wirednetmask
-		wirednetmask=$(whiptail --inputbox "Enter Netmask for External Interface" 8 78 Blue --title "Config External Interface" 3>&1 1>&2 2>&3)
+		wirednetmask=$(whiptail --inputbox "Enter Netmask for External Interface" 8 78 255.0.0.0 --title "Config External Interface" 3>&1 1>&2 2>&3)
 		#echo "Enter Gateway"
 		#read wiredgateway
-		wiredgateway=$(whiptail --inputbox "Enter Gateway for External Interface" 8 78 Blue --title "Config External Interface" 3>&1 1>&2 2>&3)
+		wiredgateway=$(whiptail --inputbox "Enter Gateway for External Interface" 8 78 10.0.0.1 --title "Config External Interface" 3>&1 1>&2 2>&3)
 		#echo "Enter DNS Server"
 		#read wireddnsserver
-		wireddnsserver=$(whiptail --inputbox "Enter DNS Server for External Interface" 8 78 Blue --title "Config External Interface" 3>&1 1>&2 2>&3)			
+		wireddnsserver=$(whiptail --inputbox "Enter DNS Server for External Interface" 8 78 8.8.8.8 --title "Config External Interface" 3>&1 1>&2 2>&3)			
 		echo "auto $wired_ext_nic">>$interfaces_file
 		echo "iface $wired_ext_nic inet static">>$interfaces_file
 		echo "address $wiredstaticip">>$interfaces_file
@@ -525,7 +525,7 @@ function configHostapd ()
 {
 	#echo "Please enter what you would like your SSID to be?"
 	#read SSID
-	SSID=$(whiptail --inputbox "Enter SSID for Wireless Network" 8 78 Blue --title "Config WLAN Interface" 3>&1 1>&2 2>&3)
+	SSID=$(whiptail --inputbox "Enter SSID for Wireless Network" 8 78 mywifi --title "Config WLAN Interface" 3>&1 1>&2 2>&3)
 	
 	#echo "Please enter what you desired WLAN password?"
 	#read wifipass
