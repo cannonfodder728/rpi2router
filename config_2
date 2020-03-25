@@ -396,6 +396,7 @@ function configFireWall ()
 		echo "sleep 5">>$rclocalfile
 	    	echo " ifconfig $wlan_int_nic | grep -q $wlan_int_nic && echo 'found $wlan_int_nic nothing to do'> /dev/kmsg ||  /usr/bin/install-wifi ">>$rclocalfile
 		
+		
 		echo " hostapd -B /etc/hostapd/hostapd.conf">>$rclocalfile
 		echo "sleep 5">>$rclocalfile
 		echo " service isc-dhcp-server restart">>$rclocalfile
@@ -524,6 +525,8 @@ function configExternalInt ()
 
 
 
+
+
 function configHostapd ()
 {
 	#echo "Please enter what you would like your SSID to be?"
@@ -537,17 +540,27 @@ function configHostapd ()
 	#echo "Re-Enter new password"
 	S2=$(whiptail --passwordbox "Re-enter WiFi password" 8 78 --title "Config WLAN Interface" 3>&1 1>&2 2>&3)
 	#read  S2
+	#if [ length=${#S1}]
+
+	if [ ${#S1} -lt 8 ]; 
+	then 
+                whiptail --title "Password Length " --msgbox "Wifi password must be at least 8 characters. Hit OK to continue." 8 78
+		configHostapd
+		#echo good; 
+
+	fi
+
 	if [ "$S1" = "$S2" ];
 	then
 		#echo "Password changed"
 		whiptail --title "Config WLAN Interface" --msgbox "Passwords match. Hit OK to continue." 8 78
 	else
-		#echo "idnt match, password NOT changed"
+		#echo "Didnt match, password NOT changed"
 		whiptail --title "Config WLAN Interface" --msgbox "Passwords DONT match. Hit OK to continue." 8 78
 		configHostapd
 	fi
 	#exitCode "WiFi Password"
-	
+
 	if (whiptail --title "Configure WLAN Interface" --yesno "Configure Wireless connection (Hostapd will be installed and configured)?" 8 78); then
 	#echo "Configure Wireless connection (Hostapd will be installed and configured)? (Enter 1 or 2 or any other key to skip)"
 	#echo "1) Yes"
@@ -566,13 +579,15 @@ function configHostapd ()
 		#if [ $input1 = "1" ]; then
 			fiveg="1"
 		fi
-		
+
+		apt-get -y remove hostapd	
 		apt-get -y install hostapd
 		
 		
 		#Create Hostapd.conf file
 		cp $hostapdconffile /etc/hostapd/hostapd.conf.$now
-		echo "driver=nl80211">>$hostapdconffile
+		rm $hostapdconffile
+		echo "driver=nl80211">$hostapdconffile
 		echo "#logger_syslog=-1">>$hostapdconffile
 		echo "#logger_syslog_level=2">>$hostapdconffile
 		echo "#logger_stdout=-1">>$hostapdconffile
@@ -584,7 +599,7 @@ function configHostapd ()
 		echo "auth_algs=1">>$hostapdconffile
 		echo "ignore_broadcast_ssid=0">>$hostapdconffile
 		echo "wpa=2">>$hostapdconffile
-		echo "wpa_passphrase=$wifipass">>$hostapdconffile
+		echo "wpa_passphrase=$S1">>$hostapdconffile
 		echo "wpa_key_mgmt=WPA-PSK">>$hostapdconffile
 		echo "wpa_pairwise=CCMP">>$hostapdconffile
 		echo "require_ht=1">>$hostapdconffile
@@ -609,7 +624,7 @@ function configHostapd ()
 		echo "DAEMON_CONF=\"/etc/hostapd/hostapd.conf\"">>/etc/default/hostapd
 		
 		echo "Done configuring hostapd.conf file"
-
+		iw reg set US
 		update-rc.d hostapd defaults &&  update-rc.d hostapd enable &&	 service hostapd start
 		exitCode "Install hostapd"
 		echo "Done configuring hostapd"
