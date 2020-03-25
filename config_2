@@ -60,7 +60,7 @@ echo "Adding ssh file to boot to ensure SSH is open"
 touch /boot/ssh
 echo "Done. Launching Menu"
 
-'
+
 function exitCode()
 {
 	OUT=$?
@@ -114,7 +114,7 @@ function getInterfaces ()
 		#tmpvar=''
 		#tmpvar="$ipaddr$operstate"
 		#echo $tmpvar
-		whiptailstr=$whiptailstr" "$dev" "$ipaddr,$operstate,$driver" " 
+		whiptailstr=$whiptailstr" "$dev" "$ipaddr,$operstate,$driver" "
 
 	done
 
@@ -260,7 +260,7 @@ function changeHostname ()
 function installWiFi ()
 {
     	if (whiptail --title "Install Wifi Drivers" --yesno "Do you want to install WiFi drivers?" 8 78); then
-	   	wget http://www.fars-robotics.net/install-wifi -O /usr/bin/install-wifi
+	   	wget http://downloads.fars-robotics.net/wifi-drivers/install-wifi -O /usr/bin/install-wifi
 	     	chmod +x /usr/bin/install-wifi
 	     	install-wifi
 		sleep 3
