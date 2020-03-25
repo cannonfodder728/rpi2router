@@ -180,7 +180,9 @@ function disableRadios ()
 			#echo "User selected Yes, exit status was $?."
 			#echo "blacklist brcmfmac" >> /etc/modprobe.d/brcmfmac.conf
 			#Disable onboard Wifi			
+			
 			rmmod brcmfmac
+			
 			echo "dtoverlay=pi3-disable-wifi" >> /boot/config.txt
 			
 			#Disable Bluetooth
@@ -189,7 +191,7 @@ function disableRadios ()
 			systemctl disable bluealsa.service
 			systemctl disable bluetooth.service
 			
-			exitCode "Disabled Onboard Bluetooh and Wifi"		
+			exitCode "Disabled Onboard Bluetooth and Wifi"		
 		#else
 	#		mainMenu	
 		fi	
@@ -202,12 +204,13 @@ function disableRadios ()
 
 		if (whiptail --title "Disable RPI4 Onboard Radios" --yesno "Looks like you're running RPI4.  Do want to disable onboard Wifi and Bluetooth?" 8 78); then
 			echo "dtoverlay=disable-wifi" >> /boot/config.txt
-			
+			rmmod brcmfmac
+			#ifdown wlan0
 			#Disable Bluetooth
 			echo "dtoverlay=disable-bt" >> /boot/config.txt
-			#systemctl disable hciuart.service
-			#systemctl disable bluealsa.service
-			#systemctl disable bluetooth.service
+			systemctl disable hciuart.service
+			systemctl disable bluealsa.service
+			systemctl disable bluetooth.service
 			
 			exitCode "Disabled Onboard Bluetooh and Wifi"		
 		#else
@@ -554,7 +557,7 @@ function configHostapd ()
 		fiveg=0
 		#if [ $input = "1" ];
 		#then
-		if (whiptail --title "Configure WLAN Interface" --yesno "Configure Hostapd for 5G? ?" 8 78); then
+		if (whiptail --title "Configure WLAN Interface" --yesno "Configure Hostapd for 5G?" 8 78); then
 
 		#echo "Configure Hostapd for 5G? (Enter 1 or 2 or any other key to skip)"
 		#echo "1) Yes"
