@@ -4,6 +4,8 @@ hostapdconffile="/etc/hostapd/hostapd.conf"
 interfaces_file="/etc/network/interfaces"
 dhcpconffile="/etc/dhcp/dhcpd.conf"
 rclocalfile="/etc/rc.local"
+logfile="routerconfig.log"
+rm -f $logfile
 now=$(date +"%m_%d_%Y_%H_%M_%S")
 
 count=0
@@ -12,36 +14,47 @@ if ! [ $(id -u) = 0 ]; then
    exit 1
 fi
 
-echo "Updating System...Standby"
 #Install required utils
-
-apt-get -y update
-apt-get -y upgrade
-
-echo "Attempting dist upgrade"
-apt-get -y dist-upgrade
-
-echo "installing needed tools"
-apt-get -y install raspi-config rpi-update htop screen iperf libnl-route-3-200 libnl-genl-3-200 libnl-3-200 libncurses5-dev	lshw bridge-utils libnl-dev libssl-dev file build-essential	curl usbutils iptables nano wireless-tools iw git unzip dkms bc python ethtool
-
-apt-get -y autoremove
-
-echo "Adding ssh file to boot to ensure SSH is open"
-touch /boot/ssh
-echo "Done. Launching Menu"
-
-
 function exitCode()
 {
+	read -p "Press enter to continue"
 	OUT=$?
 	if [ $OUT -eq 0 ];then
 		whiptail --title "Done" --msgbox "Successfully completed $1." 8 78   		
+		echo "$now Successfully Completed $1" >> $logfile
 	else
    		whiptail --title "Done" --msgbox "Failed $1." 8 78   
 		#cp /etc/network/interfaces.backup /etc/network/interfaces
+		echo "$now Failed $1" >> $logfile
 		exit
 	fi
 }
+
+echo "$now Updating System...Standby" >> $logfile
+
+apt-get -y update
+apt-get -y upgrade
+exitCode "System Update"
+
+echo "$now Attempting dist upgrade" >> $logfile
+apt-get -y dist-upgrade
+exitCode "Dist Upgrade"
+
+
+echo "$now installing needed tools" >> $logfile
+apt-get -y install raspi-config rpi-update htop screen iperf libnl-route-3-200 libnl-genl-3-200 libnl-3-200 libncurses5-dev	lshw bridge-utils libnl-dev libssl-dev file build-essential	curl usbutils iptables nano wireless-tools iw git unzip dkms bc python ethtool
+exitCode "Installed Needed Tools"
+
+
+apt-get -y autoremove
+
+echo "$now Adding ssh file to boot to ensure SSH is open" >> $logfile
+touch /boot/ssh
+exitCode "Creating SSH file"
+
+echo "$now Done. Launching Menu" >> $logfile
+
+
 
 function setInterfaces()
 {
@@ -49,25 +62,25 @@ function setInterfaces()
 	then
 		SSID="wifi"
 	    whiptail --title "SSID Not Set" --msgbox "SSID  not set, using $SSID." 8 78   
-		echo "SSID variable not seting using $SSID"
+		echo "$now SSID variable not seting using $SSID"  >> $logfile
 	fi
 	if [ -z "$wlan_int_nic" ];
 	then
 		wlan_int_nic="wlan0"
 	    whiptail --title "WLAN NIC Not Set" --msgbox "WLAN Internal NIC not set, using $wlan_int_nic." 8 78   
-		echo "wlan nic variable not seting using $wlan_int_nic"
+		echo "$now wlan nic variable not seting using $wlan_int_nic" >> $logfile
 	fi
 	if [ -z "$wired_ext_nic" ];
 	then
 		wired_ext_nic="eth0"
 	    whiptail --title "External NIC Not Set" --msgbox "External Wired NIC not set, using $wired_ext_nic." 8 78   
-		echo "wlan nic variable not seting using $wired_ext_nic"
+		echo "$now wlan nic variable not seting using $wired_ext_nic" >> $logfile
 	fi
 	if [ -z "$wired_int_nic" ];
 	then
 		wired_int_nic="eth1"
 	    whiptail --title "Internal NIC Not Set" --msgbox "Internal Wired NIC not set, using $wired_int_nic." 8 78   
-		echo "wlan nic variable not seting using $wired_int_nic"
+		echo "$now wlan nic variable not seting using $wired_int_nic" >> $logfile
 	fi
 }
 function getInterfaces ()
@@ -93,7 +106,7 @@ function getInterfaces ()
 
 }
 
-function configssh ()
+function configSSH ()
 {
         if (whiptail --title "Config SSH" --yesno "Do you want to change default ssh port?" 8 78); then
 	        sshport=$(whiptail --inputbox "Enter SSH Port" 8 78 19810 --title "Change default SSH Port" 3>&1 1>&2 2>&3)
@@ -118,7 +131,7 @@ function setTime ()
 {
 	if (whiptail --title "Set Time" --yesno "Do you want to set the time ?" 8 78); then
 	
-		echo 'Attempting to set time'
+		echo "$now Attempting to set time" >> $logfile
 		apt-get -y install dpkg-reconfigure
 		dpkg-reconfigure tzdata
 		exitCode "Set Time"
@@ -174,16 +187,15 @@ function enableSerial ()
 function changeHostname ()
 {
     if (whiptail --title "Change HostName" --yesno "Do you want to change the hostname?" 8 78); then
-		echo "Enter new hostname"
 		read hostname
+		echo "$now New hostname $hostname" >> $logfile
 		echo $hostname > /etc/hostname
 		exitCode "Change HostName"
-		
 	fi
 
 }
 
-function installWiFi ()
+function configWiFi ()
 {
     if (whiptail --title "Install Wifi Drivers" --yesno "Do you want to install WiFi drivers?" 8 78); then
 	   	wget http://downloads.fars-robotics.net/wifi-drivers/install-wifi -O /usr/bin/install-wifi
@@ -196,12 +208,12 @@ function installWiFi ()
 
 }
 
-function installFail2Ban ()
+function configFail2Ban ()
 {
 	if (whiptail --title "Install Fail2Ban" --yesno "Do you want to install Fail2Ban?" 8 78); then
 		apt-get -y remove fail2ban
 		apt-get -y install fail2ban
-		echo "installed fail2ban"
+		echo "$now installed fail2ban" >> $logfile
 		
 		# copy the example configuration file and make it live
 		cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
@@ -213,7 +225,7 @@ function installFail2Ban ()
 		fi
 		
 		#echo $sshportfail2ban
-		echo "using $sshportfail2ban as ssh port"
+		echo "$now using $sshportfail2ban as ssh port" >> $logfile
 		echo "[ssh]" >> /etc/fail2ban/jail.local
 		echo "enabled = true" >> /etc/fail2ban/jail.local
 		echo "port = $sshportfail2ban" >> /etc/fail2ban/jail.local
@@ -239,41 +251,45 @@ function changeCurrUserPass ()
 function changeRootPass ()
 {
    	if (whiptail --title "Root password" --yesno "Do you want to change root password?" 8 78); then
-		myvariable=$USER	#if [ $input = "1" ];	
+		#myvariable=$USER	#if [ $input = "1" ];	
 		#echo "Enter new password"
-		S1=$(whiptail --passwordbox "Enter new root password" 8 78 --title "Change Root Password" 3>&1 1>&2 2>&3)
+		#S1=$(whiptail --passwordbox "Enter new root password" 8 78 --title "Change Root Password" 3>&1 1>&2 2>&3)
 		#read S1
 		#echo "Re-Enter new password"
-		S2=$(whiptail --passwordbox "Re-enter new root password" 8 78 --title "Change Root Password" 3>&1 1>&2 2>&3)
+		#S2=$(whiptail --passwordbox "Re-enter new root password" 8 78 --title "Change Root Password" 3>&1 1>&2 2>&3)
 		#read  S2#if [ $input = "1" ];
-		if [ "$S1" = "$S2" ];
-	    	then
-			echo "$myvariable:$S1" | chpasswd
-			exitCode "Change root pass"
-			#echo "Password changed"
-			whiptail --title "Change Root Password" --msgbox "Password changed. Hit OK to continue." 8 78
-		else
-			#echo "idnt match, password NOT changed"
-			whiptail --title "Change Root Password" --msgbox "Passwords didnt match, password NOT changed." 8 78
-
-		fi
+		#if [ "$S1" = "$S2" ];
+	    #	then
+		
+		sudo -i passwd
 		exitCode "Change root pass"
+			#echo "Password changed"
+		#	whiptail --title "Change Root Password" --msgbox "Password changed. Hit OK to continue." 8 78
+		#else
+			#echo "idnt match, password NOT changed"
+		#	whiptail --title "Change Root Password" --msgbox "Passwords didnt match, password NOT changed." 8 78
+		#	changeRootPass
+		#fi
+		exitCode "Change root pass"
+	
 	fi
 }
 
 function disableRoot ()
 {
    	if (whiptail --title "Disable Root Account" --yesno "Do you want to disable root account?" 8 78); then
-		echo "disabling root user"
+		echo "$now Disabling root account" >> $logfile
 		passwd -dl root
 		exitCode "Disable root account"
+		#clearLogs
+	
 	fi
 }
 
-function configFireWall ()
+function configFirewall ()
 {
-	#if (whiptail --title "Configure Firewall" --yesno "Do you want to configure firewall?" 8 78); then
-		echo "setup firewall rules appropriately and startup script"
+	if (whiptail --title "Configure Firewall" --yesno "Do you want to configure firewall?" 8 78); then
+		echo "$now Setting up firewall rules appropriately and startup script" >> $logfile
 		sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
 		
 		cp $rclocalfile /etc/rc.local.backup
@@ -290,9 +306,9 @@ function configFireWall ()
 	    echo " ifconfig $wlan_int_nic | grep -q $wlan_int_nic && echo 'found $wlan_int_nic nothing to do'> /dev/kmsg ||  /usr/bin/install-wifi ">>$rclocalfile
 		
 		
-		echo " hostapd -B /etc/hostapd/hostapd.conf">>$rclocalfile
+		echo "hostapd -B /etc/hostapd/hostapd.conf">>$rclocalfile
 		echo "sleep 5">>$rclocalfile
-		echo " service isc-dhcp-server restart">>$rclocalfile
+		echo "systemctl restart isc-dhcp-server.service">>$rclocalfile
 		echo "exit 0">>$rclocalfile
 
 		iptables -F
@@ -304,7 +320,7 @@ function configFireWall ()
 		iptables -A OUTPUT -p tcp --tcp-flags SYN,FIN SYN,FIN -j DROP
 		iptables -A OUTPUT -p tcp --tcp-flags SYN,RST SYN,RST -j DROP
 		iptables -A OUTPUT -p tcp --tcp-flags ALL NONE -j DROP
-		iptables -A OUTPUT -i $wired_ext_nic -p icmp --icmp-type echo-request -j DROP
+		iptables -A INPUT -i $wired_ext_nic -p icmp --icmp-type echo-request -j DROP
 		rm -f /etc/iptables.ipv4.nat
 		sh -c "iptables-save > /etc/iptables.ipv4.nat"
 
@@ -314,23 +330,24 @@ function configFireWall ()
 
 		#echo "Done setting up startup script with Firewall Rules"
 		exitCode "Configure Firewall"
+	fi
 	#changeCurrUserPass
 }
 
 function configInterfaces ()
 {
 	wired_ext_nic=$(getInterfaces "Wired External Interface")
-	echo $wired_ext_nic" selected as Wired External Interface"
+	echo $now $wired_ext_nic" selected as Wired External Interface" >> $logfile
 
 	wlan_int_nic=$(getInterfaces "WLAN Interface")
-	echo $wlan_int_nic" selected as WLAN Interface"
+	echo $now $wlan_int_nic" selected as WLAN Interface" >> $logfile
 	#wired_int_nic=""
-	echo $count
+	#echo $count
 	#if [ $count -gt 3 ];
 	#then
 
 		wired_int_nic=$(getInterfaces "Wired Internal Interface")
-		echo $wired_int_nic" selected as Wired Internal Interface"
+		echo $now $wired_int_nic" selected as Wired Internal Interface" >> $logfile
 	#fi
 	exitCode "Config Interfaces"
 	#configBridge
@@ -342,10 +359,9 @@ function configBridge ()
 	#echo "Enter Static IP Address for internal network"
 	
 	cp $interfaces_file /etc/network/interfaces.backup
-	#rm -f $interfaces_file
+	rm -f $interfaces_file
 
 	#read intstaticip
-	brctl delbr br0
 	intstaticip=$(whiptail --inputbox "Enter Static IP Address for internal interface" 8 78 192.168.10.1 --title "Config Bridge/Internal Interface" 3>&1 1>&2 2>&3)
 	
 	#echo "Enter Netmask for internal network"
@@ -370,7 +386,13 @@ function configBridge ()
 	echo "address $intstaticip">>$interfaces_file
 	echo "broadcast $intnetbroadcast">>$interfaces_file
 	echo "netmask $intnetmask">>$interfaces_file
-    exitCode "Config Bridge"
+	
+	#check if interfaces file is good
+	#if br0 is up, get it downloads
+	
+	brctl delbr br0
+	#ifup --no-act br0
+	exitCode "Config Bridge"
 
 	#configExternalInt
 }
@@ -412,8 +434,8 @@ function configExternalInt ()
 		echo "iface $wired_ext_nic inet dhcp">>$interfaces_file
 			
 	fi	
+	ifup --no-act $wired_ext_nic
 	exitCode "Config External Interface"
-	#configHostapd
 }
 
 
@@ -422,7 +444,7 @@ function configExternalInt ()
 
 function configHostapd ()
 {
-	#echo "Please enter what you would like your SSID to be?"
+	echo "$now Installing HostAPD and setting config file" >> $logfile
 	#read SSID
 	SSID=$(whiptail --inputbox "Enter SSID for Wireless Network" 8 78 mywifi --title "Config WLAN Interface" 3>&1 1>&2 2>&3)
 	
@@ -494,6 +516,7 @@ function configHostapd ()
 		echo "require_ht=1">>$hostapdconffile
 		echo "wmm_enabled=1">>$hostapdconffile
 		echo "ieee80211n=1">>$hostapdconffile
+		echo "country_code=US">>$hostapdconffile
 		if [ $fiveg = "1" ];
 		then 
 			 echo "ieee80211ac=1">>$hostapdconffile
@@ -512,19 +535,18 @@ function configHostapd ()
 		fi
 		echo "DAEMON_CONF=\"/etc/hostapd/hostapd.conf\"">>/etc/default/hostapd
 		
-		echo "Done configuring hostapd.conf file"
-		echo "Setting Regulatory Domain as US (helps with freeing up channels to Access Point)"
+		echo "$now Done configuring hostapd.conf file" >> $logfile
+		echo "$now Setting Regulatory Domain as US (helps with freeing up channels to Access Point)" >> $logfile
 		iw reg set US
 		
 		update-rc.d hostapd defaults 
-		systemctl unmask hostapd.service
+		sleep 3
 		update-rc.d hostapd enable 
-		
-		service hostapd start
+		systemctl unmask hostapd.service
+		sleep 3
+		systemctl start hostapd.service
 		exitCode "Install hostapd"
-		echo "Done configuring hostapd"
-	else
-		mainMenu
+		echo "$now Done configuring hostapd" >> $logfile
 	fi
 	#configDHCP
 }
@@ -532,21 +554,24 @@ function configHostapd ()
 function configDHCP ()
 {
 	
-	if (whiptail --title "Configure WLAN Interface" --yesno "Configure DHCP (ISC DHCP Server will be installed and configured)?" 8 78); then
+	if (whiptail --title "Install DHCP Server" --yesno "Configure DHCP (ISC DHCP Server will be installed and configured)?" 8 78); then
 		subnet=$(awk -F"." '{print $1"."$2"."$3".0"}'<<<$intstaticip)
-		echo "Using $subnet for subnet"
+		echo "Using $subnet for DHCP subnet"
 
 		startip=$(awk -F"." '{print $1"."$2"."$3".10"}'<<<$intstaticip)
-		echo "Using $startip as stating ip"
+		echo "Using $startip as stating DHCP ip"
 
 		endip=$(awk -F"." '{print $1"."$2"."$3".50"}'<<<$intstaticip)
-		echo "Using $endip as stating ip"
+		echo "Using $endip as stating DHCP ip"
 
 
-		echo "Installing DHCP Server for DHCP and DNS Services on WLAN"
+		echo "$now Installing DHCP Server for DHCP Services on WLAN"  >> $logfile
 		cp $dhcpconffile /etc/dhcp/dhcpd.conf.backup
 		rm -f $dhcpconffile
+		ifup br0
+    
 		apt-get -y remove isc-dhcp-server
+		sleep 3
 		apt-get -y install isc-dhcp-server
 		sleep 3
 		echo "subnet $subnet netmask 255.255.255.0">>$dhcpconffile
@@ -565,12 +590,12 @@ function configDHCP ()
 		rm -f /etc/default/isc-dhcp-server
 		echo "INTERFACESv4=br0">>/etc/default/isc-dhcp-server
 
+		update-rc.d isc-dhcp-server defaults 
+		sleep 3
 		update-rc.d isc-dhcp-server enable
 		sleep 3
-		service isc-dhcp-server start
+		systemctl start isc-dhcp-server.service
 		exitCode "Install DHCP Server"
-	else
-		mainMenu
 	fi
 	#configSSH
 }
@@ -582,14 +607,11 @@ function clearLogs ()
 		cat /dev/null > .bash_history
 		history -cw
 		exitCode "Clear Logs"
-	else
-		reboot
-		#mainMenu	
 	fi
 
 }
 
-function reboot ()
+function restart ()
 {
 
 	if (whiptail --title "Reboot" --yesno "Would you like to reboot?" 8 78); then
@@ -615,7 +637,7 @@ function mainMenu {
 		"7)" "Change root password" \
 		"8)" "Disable root account" \
 		"9)" "Clear Logs" \
-		"10)" "Reboot"  3>&2 2>&1 1>&3\
+		"10)" "Restart"  3>&2 2>&1 1>&3\
 		"11)" "Exit"
 	)
 
@@ -626,7 +648,7 @@ function mainMenu {
 			disableRadios
 			enableSerial
 			changeHostname
-			installWiFi
+			configWiFi
 			configInterfaces
 			configBridge
 			configExternalInt
@@ -637,9 +659,9 @@ function mainMenu {
 			configFirewall
 			changeCurrUserPass
 			changeRootPass
-			disableroot
+			disableRoot
 			clearLogs
-			#reboot
+			restart
 		;;		
 		"1)")
 			echo 1			
@@ -676,7 +698,7 @@ function mainMenu {
 		;;
 		"8)") 
 			echo 8
-			disableroot
+			disableRoot
 		;;
 		"9)") 
 			echo 9
@@ -684,7 +706,7 @@ function mainMenu {
 		;;
 		"10)") 
 			echo 10
-			reboot
+			restart
 		;;
 		"11)")
 			echo 11
