@@ -494,7 +494,7 @@ function configHostapd ()
 		echo "ignore_broadcast_ssid=0">>$hostapdconffile
 		echo "wpa=2">>$hostapdconffile
 		wpa_psk=$(wpa_passphrase $SSID $S1 |grep -i '\bpsk=\b' | grep -o '[0-9,a-f]\+')
-		echo "$now Calculated PSK $wpa_psk based on passphrase" >> $logfile
+		echo "$now Calculated PSK $wpa_psk based on passphrase" | tee -a $logfile
 		
 		echo "wpa_psk=$wpa_psk">>$hostapdconffile
 		echo "wpa_key_mgmt=WPA-PSK">>$hostapdconffile
