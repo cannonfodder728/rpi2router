@@ -14,6 +14,34 @@ if ! [ $(id -u) = 0 ]; then
    exit 1
 fi
 
+function valid_ip()
+{
+    local  IPA1=$1
+    local  stat=1
+
+    if [[ $IPA1 =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]];
+    then
+        OIFS=$IFS
+
+   IFS='.'             #read man, you will understand, this is internal field separator; which is set as '.' 
+        ip=($ip)       # IP value is saved as array
+        IFS=$OIFS      #setting IFS back to its original value;
+
+        [[ ${ip[0]} -le 255 && ${ip[1]} -le 255 \
+           && ${ip[2]} -le 255 && ${ip[3]} -le 255 ]]  # It's testing if any part of IP is more than 255
+        stat=$? #If any part of IP as tested above is more than 255 stat will have a non zero value
+    fi
+    return $stat # as expected returning
+}
+#echo "testig 1.1.1.1"
+#valid_ip "1.1.1.1"
+#if [ $? -eq 0 ];
+#then
+#echo "good ip"
+#else
+#echo "not ip"
+#fi
+
 #Install required utils
 function exitCode()
 {
@@ -377,7 +405,13 @@ function configBridge ()
 	echo "$now Attempting to config bridge" | tee -a $logfile
 
 	intstaticip=$(whiptail --inputbox "Enter Static IP Address for internal interface" 8 78 192.168.10.1 --title "Config Bridge/Internal Interface" 3>&1 1>&2 2>&3)
-	
+	#if [ $? -eq 0 ];
+	#then
+#		echo "valid ip entered $intstaticip"
+#	else
+#		echo ""
+#	fi
+
 	intnetmask=$(whiptail --inputbox "Enter Netmask for internal interface" 8 78 255.255.255.0 --title "Config Bridge/Internal Interface" 3>&1 1>&2 2>&3)
 	
 	intnetbroadcast=$(awk -F"." '{print $1"."$2"."$3".0"}'<<<$intstaticip)
