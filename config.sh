@@ -35,6 +35,7 @@ function valid_ip()
 }
 #echo "testig 1.1.1.1"
 #valid_ip "1.1.1.1"
+#valid_ip "1.1.1.1"
 #if [ $? -eq 0 ];
 #then
 #echo "good ip"
@@ -405,18 +406,34 @@ function configBridge ()
 	echo "$now Attempting to config bridge" | tee -a $logfile
 
 	intstaticip=$(whiptail --inputbox "Enter Static IP Address for internal interface" 8 78 192.168.10.1 --title "Config Bridge/Internal Interface" 3>&1 1>&2 2>&3)
+	
+	
+	#valid_ip $intstaticip
 	#if [ $? -eq 0 ];
 	#then
-#		echo "valid ip entered $intstaticip"
-#	else
-#		echo ""
-#	fi
+	#	echo "$now valid ip entered $intstaticip for internal network static IP" | tee -a $logfile
+	#else
+	#	whiptail --title "Invalid IP entered" --msgbox "Not a valid IP.  Please redo" 8 78
+	#	configBridge
+	#fi
 
 	intnetmask=$(whiptail --inputbox "Enter Netmask for internal interface" 8 78 255.255.255.0 --title "Config Bridge/Internal Interface" 3>&1 1>&2 2>&3)
 	
+	#valid_ip $intnetmask
+	#if [ $? -eq 0 ];
+	#then
+	#	echo "$now valid ip entered $intnetmask for internal network netmask" | tee -a $logfile
+	#else
+	#	whiptail --title "Invalid IP entered" --msgbox "Not a valid IP.  Please redo" 8 78
+	#	configBridge
+	#fi
+
+	
 	intnetbroadcast=$(awk -F"." '{print $1"."$2"."$3".0"}'<<<$intstaticip)
     
-	whiptail --title "Config Bridge Interface" --msgbox "Using $intnetbroadcast for subnet" 8 78
+	echo "Using $intnetbroadcast for subnet" | tee -a $logfile
+	
+	#whiptail --title "Config Bridge Interface" --msgbox "Using $intnetbroadcast for subnet" 8 78
 		
 	echo "auto lo">>$interfaces_file
 	echo "iface lo inet loopback">>$interfaces_file	
@@ -456,10 +473,10 @@ function configExternalInt ()
 	if [ $CHOICE = "static" ];
 	then
 		wiredstaticip=$(whiptail --inputbox "Enter Static IP Address for External Interface" 8 78 10.0.0.2 --title "Config External Interface" 3>&1 1>&2 2>&3)
-
 		wirednetmask=$(whiptail --inputbox "Enter Netmask for External Interface" 8 78 255.0.0.0 --title "Config External Interface" 3>&1 1>&2 2>&3)
 		wiredgateway=$(whiptail --inputbox "Enter Gateway for External Interface" 8 78 10.0.0.1 --title "Config External Interface" 3>&1 1>&2 2>&3)
 		wireddnsserver=$(whiptail --inputbox "Enter DNS Server for External Interface" 8 78 8.8.8.8 --title "Config External Interface" 3>&1 1>&2 2>&3)			
+		
 		echo "auto $wired_ext_nic">>$interfaces_file
 		echo "iface $wired_ext_nic inet static">>$interfaces_file
 		echo "address $wiredstaticip">>$interfaces_file
