@@ -174,7 +174,7 @@ function setTime ()
 function disableRadios ()
 {
 
-	if (whiptail --title "Disable Onboard Radios" --yesno "Do want to disable onboard Wifi and Bluetooth?" 8 78); then
+	if (whiptail --title "Disable Onboard Wifi" --yesno "Do want to disable onboard Wifi?" 8 78); then
 		echo "$now Attempting to Disable onboard WiFi and Bluetooth" | tee -a $logfile
 
 		#Check if we're on RPI3
@@ -193,14 +193,17 @@ function disableRadios ()
 		
 		#Remove onboard Wifi module
 		rmmod brcmfmac
-
+		exitCode "Disabled Onboard Wifi"
+	fi
+	if (whiptail --title "Disable Onboard Bluetooth" --yesno "Do want to disable onboard Bluetooth?" 8 78); then
+	
 		#Disable Bluetooth
 		echo "dtoverlay=disable-bt" >> /boot/config.txt
 		systemctl disable hciuart.service
 		systemctl disable bluealsa.service
 		systemctl disable bluetooth.service
 			
-		exitCode "Disabled Onboard Bluetooth and Wifi"		
+		exitCode "Disabled Onboard Bluetooth"		
 	fi
     # exitCode "Enable Serial Console"
 }
@@ -520,7 +523,7 @@ function configHostapd ()
 
 	if (whiptail --title "Configure WLAN Interface" --yesno "Configure Wireless connection (Hostapd will be installed and configured)?" 8 78); then
 		fiveg=0
-		if (whiptail --title "Configure WLAN Interface" --yesno "Configure Hostapd for 5G?" 8 78); then
+		if (whiptail --title "Configure WLAN Interface" --yesno "Configure Hostapd for 5Ghz?" 8 78); then
 
 			fiveg="1"
 		fi
