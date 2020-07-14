@@ -68,10 +68,11 @@ apt-get -y update
 apt-get -y upgrade
 exitCode "System Update"
 
-echo "$now Attempting dist upgrade" | tee -a $logfile
-apt-get -y dist-upgrade
-exitCode "Dist Upgrade"
-
+if (whiptail --title "Distro Upgrade (may time some times and some things might not work)" --yesno "Attempt dist-upgrade?" 8 78); then
+	echo "$now Attempting dist upgrade" | tee -a $logfile
+	apt-get -y dist-upgrade
+	exitCode "Dist Upgrade"
+fi
 
 echo "$now installing needed tools" | tee -a $logfile
 apt-get -y install raspi-config rpi-update debconf htop bc initscripts libssl-dev raspberrypi-kernel-headers bison screen iperf libnl-route-3-200 libnl-genl-3-200 libnl-3-200 libnl-3-dev libnl-genl-3-dev libncurses5-dev lshw bridge-utils libnl-dev libssl-dev file build-essential	curl usbutils iptables nano wireless-tools iw git unzip dkms bc python ethtool
