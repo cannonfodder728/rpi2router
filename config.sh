@@ -76,10 +76,8 @@ fi
 
 echo "$now installing needed tools" | tee -a $logfile
 apt-get -y install raspi-config rpi-update debconf htop bc initscripts net-tools libssl-dev raspberrypi-kernel-headers bison screen iperf libnl-route-3-200 libnl-genl-3-200 libnl-3-200 libnl-3-dev libnl-genl-3-dev libncurses5-dev lshw bridge-utils libnl-dev libssl-dev file build-essential	curl usbutils iptables nano wireless-tools iw git unzip dkms bc python ethtool
-sudo apt install 
 
 exitCode "Installed Needed Tools"
-
 
 apt-get -y autoremove
 
@@ -88,8 +86,6 @@ touch /boot/ssh
 exitCode "Creating SSH file"
 
 echo "$now Done. Launching Menu" | tee -a $logfile
-
-
 
 function setInterfaces()
 {
