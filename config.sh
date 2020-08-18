@@ -75,7 +75,7 @@ if (whiptail --title "Distro Upgrade (may time some times and some things might 
 fi
 
 echo "$now installing needed tools" | tee -a $logfile
-apt-get -y install raspi-config rpi-update debconf htop bc initscripts net-tools libssl-dev raspberrypi-kernel-headers bison screen iperf libnl-route-3-200 libnl-genl-3-200 libnl-3-200  libnl-genl-3-dev libncurses5-dev lshw bridge-utils libnl-dev libssl-dev file build-essential	curl usbutils iptables nano wireless-tools iw git unzip dkms bc python ethtool
+apt-get -y install raspi-config rpi-update debconf htop bc initscripts net-tools libssl-dev raspberrypi-kernel-headers bison screen iperf libnl-route-3-200 libncurses5-dev lshw bridge-utils libnl-dev libssl-dev file build-essential	curl usbutils iptables nano wireless-tools iw git unzip dkms bc python ethtool
 
 exitCode "Installed Needed Tools"
 
@@ -728,7 +728,7 @@ function mainMenu {
 
 		"5)")
 			echo 5	
-			installWiFi
+			configWiFi
 			mainMenu
 		;;
 
