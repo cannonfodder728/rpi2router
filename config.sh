@@ -68,6 +68,7 @@ apt-get -y update
 apt-get -y upgrade
 exitCode "System Update"
 
+
 if (whiptail --title "Distro Upgrade (may time some times and some things might not work)" --yesno "Attempt dist-upgrade?" 8 78); then
 	echo "$now Attempting dist upgrade" | tee -a $logfile
 	apt-get -y dist-upgrade
@@ -75,7 +76,15 @@ if (whiptail --title "Distro Upgrade (may time some times and some things might 
 fi
 
 echo "$now installing needed tools" | tee -a $logfile
+
 apt-get -y install debconf htop bc initscripts net-tools libssl-dev raspberrypi-kernel-headers bison screen iperf libnl-route-3-200 libncurses5-dev lshw bridge-utils libnl-dev libssl-dev file build-essential	curl usbutils iptables nano wireless-tools iw git unzip dkms bc python ethtool
+
+if (whiptail --title "Are you running on Raspberry Pi" --yesno "Running on Pi?" 8 78); then
+	echo "$now Attempting dist upgrade" | tee -a $logfile
+	apt-get -y install raspi-config
+	exitCode "Install Raspberry Pi Config tools"
+fi
+
 
 exitCode "Installed Needed Tools"
 
