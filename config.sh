@@ -7,7 +7,7 @@ rclocalfile="/etc/rc.local"
 logfile="routerconfig.log"
 rm -f $logfile
 now=$(date +"%m_%d_%Y_%H_%M_%S")
-
+ubuntu=0
 count=0
 if ! [ $(id -u) = 0 ]; then
    echo "Please execute as root!"
@@ -77,13 +77,13 @@ fi
 
 echo "$now installing needed tools" | tee -a $logfile
 
-apt-get -y install debconf htop bc  net-tools libssl-dev  bison screen iperf libnl-route-3-200 libncurses5-dev lshw bridge-utils  libssl-dev file build-essential	curl usbutils iptables nano wireless-tools iw git unzip dkms bc python ethtool
-
-if (whiptail --title "Are you running on Raspberry Pi" --yesno "Running on Pi?" 8 78); then
-	echo "$now Attempting dist upgrade" | tee -a $logfile
-	apt-get -y install raspi-config raspberrypi-kernel-headers initscripts libnl-dev
-	exitCode "Install Raspberry Pi Config tools"
+if (whiptail --title "Are you running Ubuntu on your Pi" --yesno "Running on Pi?" 8 78); then
+	apt-get -y install debconf htop bc net-tools libssl-dev  bison screen iperf libnl-route-3-200 libncurses5-dev lshw bridge-utils  libssl-dev file build-essential curl usbutils iptables nano wireless-tools iw git unzip dkms bc python ethtool
+	ubuntu=1
+else
+	apt-get -y install debconf htop bc net-tools libssl-dev  bison screen iperf libnl-route-3-200 libncurses5-dev lshw bridge-utils  libssl-dev file build-essential curl usbutils iptables nano wireless-tools iw git unzip dkms bc python ethtool raspi-config raspberrypi-kernel-headers initscripts libnl-dev
 fi
+	exitCode "Install Raspberry Pi Config tools"
 
 
 exitCode "Installed Needed Tools"
@@ -101,13 +101,13 @@ function setInterfaces()
 	if [ -z "$SSID" ];
 	then
 		SSID="wifi"
-	    whiptail --title "SSID Not Set" --msgbox "SSID  not set, using $SSID." 8 78   
+	    	whiptail --title "SSID Not Set" --msgbox "SSID  not set, using $SSID." 8 78   
 		echo "$now SSID variable not seting using $SSID"  | tee -a $logfile
 	fi
 	if [ -z "$wlan_int_nic" ];
 	then
 		wlan_int_nic="wlan0"
-	    whiptail --title "WLAN NIC Not Set" --msgbox "WLAN Internal NIC not set, using $wlan_int_nic." 8 78   
+	    	whiptail --title "WLAN NIC Not Set" --msgbox "WLAN Internal NIC not set, using $wlan_int_nic." 8 78   
 		echo "$now wlan nic variable not seting using $wlan_int_nic" | tee -a $logfile
 	fi
 	if [ -z "$wired_ext_nic" ];
@@ -184,33 +184,43 @@ function disableRadios ()
 
 	if (whiptail --title "Disable Onboard Wifi" --yesno "Do want to disable onboard Wifi?" 8 78); then
 		echo "$now Attempting to Disable onboard WiFi and Bluetooth" | tee -a $logfile
-
-		#Check if we're on RPI3
-		rpi3=$(cat /proc/device-tree/model | grep -ie 'Raspberry Pi 3' | wc -l)
-		if [ $rpi3 -ge 1 ];
+		if [ $ubuntu -eq 1 ];
 		then
-			echo "dtoverlay=pi3-disable-wifi" >> /boot/config.txt
-		fi
+			echo "dtoverlay=pi3-disable-wifi" >> /boot/firmware/usercfg.txt
 		
-		#Check if we're on RPI4
-		rpi4=$(cat /proc/device-tree/model | grep -ie 'Raspberry Pi 4' | wc -l)
-		if [ $rpi4 -ge 1 ];
-		then
-			echo "dtoverlay=disable-wifi" >> /boot/config.txt
-		fi
+		else
+			#Check if we're on RPI3
+			rpi3=$(cat /proc/device-tree/model | grep -ie 'Raspberry Pi 3' | wc -l)
+			if [ $rpi3 -ge 1 ];
+			then
+				echo "dtoverlay=pi3-disable-wifi" >> /boot/config.txt
+			fi
 		
-		#Remove onboard Wifi module
-		rmmod brcmfmac
+			#Check if we're on RPI4
+			rpi4=$(cat /proc/device-tree/model | grep -ie 'Raspberry Pi 4' | wc -l)
+			if [ $rpi4 -ge 1 ];
+			then
+				echo "dtoverlay=disable-wifi" >> /boot/config.txt
+			fi
+		
+			#Remove onboard Wifi module
+			rmmod brcmfmac
+		fi
 		exitCode "Disabled Onboard Wifi"
 	fi
 	if (whiptail --title "Disable Onboard Bluetooth" --yesno "Do want to disable onboard Bluetooth?" 8 78); then
-	
+		
 		#Disable Bluetooth
-		echo "dtoverlay=disable-bt" >> /boot/config.txt
-		systemctl disable hciuart.service
-		systemctl disable bluealsa.service
-		systemctl disable bluetooth.service
-			
+		if [ $ubuntu -eq 1 ];
+		then
+			echo "dtoverlay=disable-bt" >> /boot/firmware/usercfg.txt
+		
+		else
+			echo "dtoverlay=disable-bt" >> /boot/config.txt
+			systemctl disable hciuart.service
+			systemctl disable bluealsa.service
+			systemctl disable bluetooth.service
+		fi
 		exitCode "Disabled Onboard Bluetooth"		
 	fi
     # exitCode "Enable Serial Console"
