@@ -77,11 +77,11 @@ fi
 
 echo "$now installing needed tools" | tee -a $logfile
 
-apt-get -y install debconf htop bc initscripts net-tools libssl-dev raspberrypi-kernel-headers bison screen iperf libnl-route-3-200 libncurses5-dev lshw bridge-utils libnl-dev libssl-dev file build-essential	curl usbutils iptables nano wireless-tools iw git unzip dkms bc python ethtool
+apt-get -y install debconf htop bc  net-tools libssl-dev  bison screen iperf libnl-route-3-200 libncurses5-dev lshw bridge-utils  libssl-dev file build-essential	curl usbutils iptables nano wireless-tools iw git unzip dkms bc python ethtool
 
 if (whiptail --title "Are you running on Raspberry Pi" --yesno "Running on Pi?" 8 78); then
 	echo "$now Attempting dist upgrade" | tee -a $logfile
-	apt-get -y install raspi-config
+	apt-get -y install raspi-config raspberrypi-kernel-headers initscripts libnl-dev
 	exitCode "Install Raspberry Pi Config tools"
 fi
 
