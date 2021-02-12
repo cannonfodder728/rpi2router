@@ -5,6 +5,7 @@ interfaces_file="/etc/network/interfaces"
 dhcpconffile="/etc/dhcp/dhcpd.conf"
 rclocalfile="/etc/rc.local"
 logfile="routerconfig.log"
+startupservice_file="/etc/systemd/system/routerstartup.service"
 rm -f $logfile
 now=$(date +"%m_%d_%Y_%H_%M_%S")
 ubuntu=0
@@ -164,6 +165,29 @@ function configSSH ()
 
 	    exitCode "Config SSH"
 	fi
+
+}
+
+function createStartupService ()
+{
+	#Create Startup Service File
+	rm -f $startupservice_file
+	touch $startupservice_file 
+
+	echo "[Unit]">>$startupservice_file 
+	echo "After=network.service">>$startupservice_file 
+	echo "[Service]">>$startupservice_file 
+	echo "ExecStart=/usr/local/bin/routerstartup.sh">>$startupservice_file 
+
+	echo "[Install]">>$startupservice_file 
+	echo "WantedBy=default.target">>$startupservice_file 
+
+	#Create Startup script
+	
+	
+	#Enable Service
+	systemctl daemon-reload
+	systemctl enable routerstartup.service
 
 }
 
@@ -373,7 +397,7 @@ function configFirewall ()
 		iptables -A INPUT -i $wired_ext_nic -p icmp --icmp-type echo-request -j DROP
 		rm -f /etc/iptables.ipv4.nat
 		sh -c "iptables-save > /etc/iptables.ipv4.nat"
-
+		iptables-save > /etc/iptables/rules.v4
 		# sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
 
 		echo "up iptables-restore < /etc/iptables.ipv4.nat">> $interfaces_file
@@ -597,11 +621,14 @@ function configHostapd ()
 		echo "$now Setting Regulatory Domain as US (helps with freeing up channels to Access Point)" | tee -a $logfile
 		iw reg set US
 		
-		update-rc.d hostapd defaults 
+		systemctl unmask hostapd
 		sleep 3
-		update-rc.d hostapd enable 
-		systemctl unmask hostapd.service
-		sleep 3
+		systemctl enable hostapd
+		#update-rc.d hostapd defaults 
+		#sleep 3
+		#update-rc.d hostapd enable 
+		#systemctl unmask hostapd.service
+		#sleep 3
 		#systemctl start hostapd.service
 		exitCode "Install hostapd"
 		echo "$now Done configuring hostapd" | tee -a $logfile
