@@ -6,6 +6,7 @@ dhcpconffile="/etc/dhcp/dhcpd.conf"
 rclocalfile="/etc/rc.local"
 logfile="routerconfig.log"
 startupservice_file="/etc/systemd/system/routerstartup.service"
+startup_script="/usr/local/bin/routerstartup.sh"
 rm -f $logfile
 now=$(date +"%m_%d_%Y_%H_%M_%S")
 ubuntu=0
@@ -179,13 +180,14 @@ function createStartupService ()
 	echo "[Unit]">>$startupservice_file 
 	echo "After=network.service">>$startupservice_file 
 	echo "[Service]">>$startupservice_file 
-	echo "ExecStart=/usr/local/bin/routerstartup.sh">>$startupservice_file 
+	echo "ExecStart=$startup_script">>$startupservice_file 
 
 	echo "[Install]">>$startupservice_file 
 	echo "WantedBy=default.target">>$startupservice_file 
 
 	#Create Startup script
-	
+	touch startup_script
+	chmod +x startup_script
 	
 	
 	#Enable Service
@@ -388,24 +390,25 @@ function configFirewall ()
 		#echo "systemctl restart isc-dhcp-server.service">>$rclocalfile
 		#echo "exit 0">>$rclocalfile
 
-		iptables -F
-		iptables -t nat -A POSTROUTING -o $wired_ext_nic -j MASQUERADE
-		iptables -A FORWARD -i $wired_ext_nic -o br0 -m state --state RELATED,ESTABLISHED -j ACCEPT
-		iptables -A FORWARD -i br0 -o $wired_ext_nic -j ACCEPT
-		iptables -A OUTPUT -p tcp --tcp-flags ALL ALL -j DROP
-		iptables -A OUTPUT -p tcp --tcp-flags ALL ACK,RST,SYN,FIN -j DROP
-		iptables -A OUTPUT -p tcp --tcp-flags SYN,FIN SYN,FIN -j DROP
-		iptables -A OUTPUT -p tcp --tcp-flags SYN,RST SYN,RST -j DROP
-		iptables -A OUTPUT -p tcp --tcp-flags ALL NONE -j DROP
-		iptables -A INPUT -i $wired_ext_nic -p icmp --icmp-type echo-request -j DROP
-		rm -f /etc/iptables.ipv4.nat
-		sh -c "iptables-save > /etc/iptables.ipv4.nat"
-		iptables-save > /etc/iptables/rules.v4
+		echo "iptables -F">>$startup_script
+		echo "iptables -t nat -A POSTROUTING -o $wired_ext_nic -j MASQUERADE">>$startup_script
+		echo "iptables -A FORWARD -i $wired_ext_nic -o br0 -m state --state RELATED,ESTABLISHED -j ACCEPT">>$startup_script
+		echo "iptables -A FORWARD -i br0 -o $wired_ext_nic -j ACCEPT">>$startup_script
+		echo "iptables -A OUTPUT -p tcp --tcp-flags ALL ALL -j DROP">>$startup_script
+		echo "iptables -A OUTPUT -p tcp --tcp-flags ALL ACK,RST,SYN,FIN -j DROP">>$startup_script
+		echo "iptables -A OUTPUT -p tcp --tcp-flags SYN,FIN SYN,FIN -j DROP">>$startup_script
+		echo "iptables -A OUTPUT -p tcp --tcp-flags SYN,RST SYN,RST -j DROP">>$startup_script
+		echo "iptables -A OUTPUT -p tcp --tcp-flags ALL NONE -j DROP">>$startup_script
+		echo "iptables -A INPUT -i $wired_ext_nic -p icmp --icmp-type echo-request -j DROP">>$startup_script
+		#rm -f /etc/iptables.ipv4.nat
+		#sh -c "iptables-save > /etc/iptables.ipv4.nat"
+		#iptables-save > /etc/iptables/rules.v4
 		# sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
 
-		echo "up iptables-restore < /etc/iptables.ipv4.nat">> $interfaces_file
+		#echo "up iptables-restore < /etc/iptables.ipv4.nat">> $interfaces_file
 
-		#echo "Done setting up startup script with Firewall Rules"
+		echo "Done setting up startup script with Firewall Rules"  | tee -a $logfile
+
 		exitCode "Configure Firewall"
 	fi
 	#changeCurrUserPass
@@ -443,6 +446,8 @@ function cleanNetworking ()
 	echo "$now Attempting backup interfaces file" | tee -a $logfile
 	cp $interfaces_file /etc/network/interfaces.backup
 	rm -f $interfaces_file
+	#cp $interfaces_file /etc/network/interfaces.backup
+	#rm -f $interfaces_file
 	echo "$now Backed up and deleted existing interfaces file" | tee -a $logfile
 
 }
@@ -456,27 +461,10 @@ function configBridge ()
 	intstaticip=$(whiptail --inputbox "Enter Static IP Address for internal interface" 8 78 192.168.10.1 --title "Config Bridge/Internal Interface" 3>&1 1>&2 2>&3)
 	
 	
-	#valid_ip $intstaticip
-	#if [ $? -eq 0 ];
-	#then
-	#	echo "$now valid ip entered $intstaticip for internal network static IP" | tee -a $logfile
-	#else
-	#	whiptail --title "Invalid IP entered" --msgbox "Not a valid IP.  Please redo" 8 78
-	#	configBridge
-	#fi
-
+	
 	intnetmask=$(whiptail --inputbox "Enter Netmask for internal interface" 8 78 255.255.255.0 --title "Config Bridge/Internal Interface" 3>&1 1>&2 2>&3)
 	
-	#valid_ip $intnetmask
-	#if [ $? -eq 0 ];
-	#then
-	#	echo "$now valid ip entered $intnetmask for internal network netmask" | tee -a $logfile
-	#else
-	#	whiptail --title "Invalid IP entered" --msgbox "Not a valid IP.  Please redo" 8 78
-	#	configBridge
-	#fi
-
-	
+		
 	intnetbroadcast=$(awk -F"." '{print $1"."$2"."$3".0"}'<<<$intstaticip)
     
 	echo "Using $intnetbroadcast for subnet" | tee -a $logfile
@@ -491,26 +479,16 @@ function configBridge ()
 	
 	echo "auto br0">>$interfaces_file	
 	echo "iface br0 inet static">>$interfaces_file
-	#if [ -z "$wired_int_nic" ];
-	#then
-	#	echo "bridge_ports $wlan_int_nic">>$interfaces_file
-
-	#else
-		echo "bridge_ports $wlan_int_nic $wired_int_nic">>$interfaces_file
-	#fi
+	echo "bridge_ports $wlan_int_nic $wired_int_nic">>$interfaces_file
 	echo "address $intstaticip">>$interfaces_file
 	echo "broadcast $intnetbroadcast">>$interfaces_file
 	echo "netmask $intnetmask">>$interfaces_file
 	
 	
 	#ifup --no-act br0
-	exitCode "Config Bridge"
+	#exitCode "Config Bridge"
 
 	#configExternalInt
-}
-
-function configExternalInt ()
-{
 
 	CHOICE=$(whiptail --title "Configure External Interface" --radiolist \
 	"How will external interface be configured?" 15 60 4 \
@@ -608,7 +586,7 @@ function configHostapd ()
 			 echo "channel=36">>$hostapdconffile
 			 echo "hw_mode=a">>$hostapdconffile
 			 echo "require_vht=1">>$hostapdconffile
-			 echo "vht_oper_chwidth=0">>$hostapdconffile
+			 echo "vht_oper_chwidth=1">>$hostapdconffile
 			 echo "#vht_capab=[MAX-MPDU-11454][RXLDPC][SHORT-GI-80][TX-STBC-2BY1][RX-STBC-1]">>$hostapdconffile
 			 echo "#vht_oper_centr_freq_seg0_idx=62">>$hostapdconffile
 		else
