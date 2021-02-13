@@ -78,13 +78,15 @@ fi
 
 echo "$now installing needed tools" | tee -a $logfile
 
-if (whiptail --title "Are you running Ubuntu on your Pi" --yesno "Running on Pi?" 8 78); then
-	apt-get -y install debconf htop bc net-tools libssl-dev  bison screen iperf libnl-route-3-200 libncurses5-dev lshw bridge-utils  libssl-dev file build-essential curl usbutils iptables nano wireless-tools iw git unzip dkms bc python ethtool
-	ubuntu=1
-else
-	apt-get -y install debconf htop bc net-tools libssl-dev  bison screen iperf libnl-route-3-200 libncurses5-dev lshw bridge-utils  libssl-dev file build-essential curl usbutils iptables nano wireless-tools iw git unzip dkms bc python ethtool raspi-config raspberrypi-kernel-headers initscripts libnl-dev
+if lsb_release -a | grep -iq 'ubuntu'; then
+        if (whiptail --title "Looks like Ubuntu on your Pi" --yesno "Running Ubuntu on Pi?" 8 78); then
+                echo "installing ubuntu tools" | tee -a $logfile
+                apt-get -y install debconf htop bc net-tools libssl-dev  bison screen iperf libnl-route-3-200 libncurses5-dev lshw bridge-utils  libssl-dev file build-essential curl usbutils iptables nano wireless-tools iw>                ubuntu=1
+        else
+                echo "installing raspbian tools" | tee -a $logfile
+                apt-get -y install debconf htop bc net-tools libssl-dev  bison screen iperf libnl-route-3-200 libncurses5-dev lshw bridge-utils  libssl-dev file build-essential curl usbutils iptables nano wireless-tools iw>        fi
 fi
-	exitCode "Install Raspberry Pi Config tools"
+exitCode "Install Raspberry Pi Config tools"
 
 
 exitCode "Installed Needed Tools"
@@ -183,6 +185,7 @@ function createStartupService ()
 	echo "WantedBy=default.target">>$startupservice_file 
 
 	#Create Startup script
+	
 	
 	
 	#Enable Service
@@ -366,24 +369,24 @@ function configFirewall ()
 		echo "$now Setting up firewall rules appropriately and startup script" | tee -a $logfile
 		sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
 		
-		cp $rclocalfile /etc/rc.local.backup
-		rm -f $rclocalfile
-		touch $rclocalfile 
-		sed -i 's/#exit 0/#exit 0/g' $rclocalfile
-		echo " ifdown $wired_ext_nic">>$rclocalfile
-		echo " ifup $wired_ext_nic">>$rclocalfile
+		#cp $rclocalfile /etc/rc.local.backup
+		#rm -f $rclocalfile
+		#touch $rclocalfile 
+		#sed -i 's/#exit 0/#exit 0/g' $rclocalfile
+		#echo " ifdown $wired_ext_nic">>$rclocalfile
+		#echo " ifup $wired_ext_nic">>$rclocalfile
 		
-		echo "sleep 5">>$rclocalfile
-		echo " ifdown br0">>$rclocalfile
-		echo " ifup br0">>$rclocalfile
-		echo "sleep 5">>$rclocalfile
-	    echo " ifconfig $wlan_int_nic | grep -q $wlan_int_nic && echo 'found $wlan_int_nic nothing to do'> /dev/kmsg ||  /usr/bin/install-wifi ">>$rclocalfile
+		#echo "sleep 5">>$rclocalfile
+		#echo " ifdown br0">>$rclocalfile
+		#echo " ifup br0">>$rclocalfile
+		#echo "sleep 5">>$rclocalfile
+	    	#echo " ifconfig $wlan_int_nic | grep -q $wlan_int_nic && echo 'found $wlan_int_nic nothing to do'> /dev/kmsg ||  /usr/bin/install-wifi ">>$rclocalfile
 		
 		
-		echo "hostapd -B /etc/hostapd/hostapd.conf">>$rclocalfile
-		echo "sleep 5">>$rclocalfile
-		echo "systemctl restart isc-dhcp-server.service">>$rclocalfile
-		echo "exit 0">>$rclocalfile
+		#echo "hostapd -B /etc/hostapd/hostapd.conf">>$rclocalfile
+		#echo "sleep 5">>$rclocalfile
+		#echo "systemctl restart isc-dhcp-server.service">>$rclocalfile
+		#echo "exit 0">>$rclocalfile
 
 		iptables -F
 		iptables -t nat -A POSTROUTING -o $wired_ext_nic -j MASQUERADE
@@ -675,10 +678,10 @@ function configDHCP ()
 		rm -f /etc/default/isc-dhcp-server
 		echo "INTERFACESv4=br0">>/etc/default/isc-dhcp-server
 
-		update-rc.d isc-dhcp-server defaults 
+		systemctl unmask isc-dhcp-server
 		sleep 3
-		update-rc.d isc-dhcp-server enable
-		sleep 3
+		systemctl enable isc-dhcp-server
+		
 		#systemctl start isc-dhcp-server.service
 		exitCode "Install DHCP Server"
 	fi
