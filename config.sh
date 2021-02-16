@@ -160,6 +160,8 @@ function configSSH ()
 	 	echo "IgnoreRhosts yes">> /etc/ssh/sshd_config
 	 	echo "HostbasedAuthentication no">> /etc/ssh/sshd_config
 	 	echo "PermitEmptyPasswords no">> /etc/ssh/sshd_config
+		echo "LoginGraceTime 45">> /etc/ssh/sshd_config
+		echo "X11Forwarding no">> /etc/ssh/sshd_config
 		echo "Changed SSH Port"
 		echo "Reconfiguring OpenSSH Keys"
 
