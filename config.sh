@@ -83,7 +83,8 @@ if lsb_release -a | grep -iq 'ubuntu'; then
         if (whiptail --title "Looks like Ubuntu on your Pi" --yesno "Running Ubuntu on Pi?" 8 78); then
                 echo "installing ubuntu tools" | tee -a $logfile
                 apt-get -y install debconf htop bc net-tools libssl-dev  bison screen iperf libnl-route-3-200 libncurses5-dev lshw bridge-utils  libssl-dev file build-essential curl usbutils iptables nano wireless-tools iw>                ubuntu=1
-        else
+        	interfaces_file=$(ls /etc/netplan)
+	else
                 echo "installing raspbian tools" | tee -a $logfile
                 apt-get -y install debconf htop bc net-tools libssl-dev  bison screen iperf libnl-route-3-200 libncurses5-dev lshw bridge-utils  libssl-dev file build-essential curl usbutils iptables nano wireless-tools iw>        fi
 fi
