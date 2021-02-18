@@ -162,6 +162,7 @@ function configSSH ()
 	 	echo "PermitEmptyPasswords no">> /etc/ssh/sshd_config
 		echo "LoginGraceTime 45">> /etc/ssh/sshd_config
 		echo "X11Forwarding no">> /etc/ssh/sshd_config
+		echo "PrintLastLog yes">> /etc/ssh/sshd_config
 		echo "Changed SSH Port"
 		echo "Reconfiguring OpenSSH Keys"
 
