@@ -68,6 +68,7 @@ echo "$now Updating System...Standby" | tee -a $logfile
 
 apt-get -y update
 apt-get -y upgrade
+
 exitCode "System Update"
 
 
@@ -87,6 +88,7 @@ if lsb_release -a | grep -iq 'ubuntu'; then
 	else
                 echo "installing raspbian tools" | tee -a $logfile
                 apt-get -y install debconf htop bc net-tools libssl-dev  bison screen iperf libnl-route-3-200 libncurses5-dev lshw bridge-utils  libssl-dev file build-essential curl usbutils iptables nano wireless-tools iw>        fi
+	fi
 fi
 exitCode "Install Raspberry Pi Config tools"
 
@@ -455,7 +457,7 @@ function cleanNetworking ()
 	echo "$now Backed up and deleted existing interfaces file" | tee -a $logfile
 
 }
-function configBridge ()
+function configNetwork ()
 {
 	
 	#echo "Config Bridge Interface"
@@ -474,7 +476,7 @@ function configBridge ()
 	echo "Using $intnetbroadcast for subnet" | tee -a $logfile
 	
 	#whiptail --title "Config Bridge Interface" --msgbox "Using $intnetbroadcast for subnet" 8 78
-		
+	if	
 	echo "auto lo">>$interfaces_file
 	echo "iface lo inet loopback">>$interfaces_file	
 	
@@ -492,8 +494,7 @@ function configBridge ()
 	#ifup --no-act br0
 	#exitCode "Config Bridge"
 
-	#configExternalInt
-
+	
 	CHOICE=$(whiptail --title "Configure External Interface" --radiolist \
 	"How will external interface be configured?" 15 60 4 \
 	"static" "Enter IP info manually" OFF \
@@ -520,7 +521,7 @@ function configBridge ()
 			
 	fi	
 	#ifup --no-act $wired_ext_nic
-	exitCode "Config External Interface"
+	exitCode "Config Network"
 }
 
 function configHostapd ()
@@ -721,8 +722,7 @@ function mainMenu {
 			configWiFi
 			cleanNetworking
 			selectInterfaces
-			configBridge
-			configExternalInt
+			configNetwork
 			configHostapd
 			configDHCP
 			configSSH
