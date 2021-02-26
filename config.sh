@@ -84,16 +84,17 @@ fi
 
 echo "$now installing needed tools" | tee -a $logfile
 
-if lsb_release -a | grep -iq 'ubuntu'; then
-        if (whiptail --title "Looks like Ubuntu on your Pi" --yesno "Running Ubuntu on Pi?" 8 78); then
+#if lsb_release -a | grep -iq 'ubuntu'; then
+        if (whiptail --title "Are you running Ubuntu on your Pi" --yesno "Running Ubuntu on Pi?" 8 78); then
                 echo "installing ubuntu tools" | tee -a $logfile
                 apt-get -y install debconf htop bc net-tools libssl-dev  bison screen iperf libnl-route-3-200 libncurses5-dev lshw bridge-utils  libssl-dev file build-essential curl usbutils iptables nano wireless-tools iw>                ubuntu=1
         	interfaces_file=$(ls /etc/netplan)
+		
 	else
                 echo "installing raspbian tools" | tee -a $logfile
                 apt-get -y install debconf htop bc net-tools libssl-dev  bison screen iperf libnl-route-3-200 libncurses5-dev lshw bridge-utils  libssl-dev file build-essential curl usbutils iptables nano wireless-tools iw>        fi
 	fi
-fi
+#fi
 exitCode "Install Raspberry Pi Config tools"
 
 
@@ -198,26 +199,28 @@ function createStartupService ()
 	#Create Startup script
 	touch startup_script
 	#echo "wired_ext_nic="eth0"
-	#sudo date > /home/ubuntu/disk_space_report.txt
-	#sudo du -sh /home/ >> /home/ubuntu/disk_space_report.txt
-
-	echo "iptables -F">>$startup_script
-        echo "iptables -t nat -A POSTROUTING -o $wired_ext_nic -j MASQUERADE">>$startup_script
-        echo "iptables -A FORWARD -i $wired_ext_nic -o br0 -m state --state RELATED,ESTABLISHED -j ACCEPT">>$startup_script
-        echo "iptables -A FORWARD -i br0 -o $wired_ext_nic -j ACCEPT">>$startup_script">>$startup_script
-        echo "iptables -A OUTPUT -p tcp --tcp-flags ALL ALL -j DROP">>$startup_script">>$startup_script
-        echo "iptables -A OUTPUT -p tcp --tcp-flags ALL ACK,RST,SYN,FIN -j DROP">>$startup_script
-        echo "iptables -A OUTPUT -p tcp --tcp-flags SYN,FIN SYN,FIN -j DROP">>$startup_script
-        echo "iptables -A OUTPUT -p tcp --tcp-flags SYN,RST SYN,RST -j DROP">>$startup_script
-        echo "iptables -A OUTPUT -p tcp --tcp-flags ALL NONE -j DROP">>$startup_script
-        echo "iptables -A INPUT -i $wired_ext_nic -p icmp --icmp-type echo-request -j DROP">>$startup_script
+	
+	#echo "iptables -F">>$startup_script
+        #echo "iptables -t nat -A POSTROUTING -o $wired_ext_nic -j MASQUERADE">>$startup_script
+        #echo "iptables -A FORWARD -i $wired_ext_nic -o br0 -m state --state RELATED,ESTABLISHED -j ACCEPT">>$startup_script
+        #echo "iptables -A FORWARD -i br0 -o $wired_ext_nic -j ACCEPT">>$startup_script">>$startup_script
+        #echo "iptables -A OUTPUT -p tcp --tcp-flags ALL ALL -j DROP">>$startup_script">>$startup_script
+        #echo "iptables -A OUTPUT -p tcp --tcp-flags ALL ACK,RST,SYN,FIN -j DROP">>$startup_script
+        #echo "iptables -A OUTPUT -p tcp --tcp-flags SYN,FIN SYN,FIN -j DROP">>$startup_script
+        #echo "iptables -A OUTPUT -p tcp --tcp-flags SYN,RST SYN,RST -j DROP">>$startup_script
+        #echo "iptables -A OUTPUT -p tcp --tcp-flags ALL NONE -j DROP">>$startup_script
+        #echo "iptables -A INPUT -i $wired_ext_nic -p icmp --icmp-type echo-request -j DROP">>$startup_script
 	
 	chmod +x startup_script
+	echo "$now Created Startup Script" | tee -a $logfile
 	
-	
+	echo "$now Attempting to create Startup Service" | tee -a $logfile
+
 	#Enable Service
 	systemctl daemon-reload
 	systemctl enable routerstartup.service
+	exitCode "Startup Service"
+
 
 }
 
@@ -484,30 +487,55 @@ function configNetwork ()
 	echo "$now Attempting to config bridge" | tee -a $logfile
 
 	intstaticip=$(whiptail --inputbox "Enter Static IP Address for internal interface" 8 78 192.168.10.1 --title "Config Bridge/Internal Interface" 3>&1 1>&2 2>&3)
-	
-	
-	
 	intnetmask=$(whiptail --inputbox "Enter Netmask for internal interface" 8 78 255.255.255.0 --title "Config Bridge/Internal Interface" 3>&1 1>&2 2>&3)
-	
-		
 	intnetbroadcast=$(awk -F"." '{print $1"."$2"."$3".0"}'<<<$intstaticip)
     
 	echo "Using $intnetbroadcast for subnet" | tee -a $logfile
 	
 	#whiptail --title "Config Bridge Interface" --msgbox "Using $intnetbroadcast for subnet" 8 78
-	if	
-	echo "auto lo">>$interfaces_file
-	echo "iface lo inet loopback">>$interfaces_file	
-	
-	echo "iface $wlan_int_nic inet manual">>$interfaces_file
-	echo "iface $wired_int_nic inet manual">>$interfaces_file
-	
-	echo "auto br0">>$interfaces_file	
-	echo "iface br0 inet static">>$interfaces_file
-	echo "bridge_ports $wlan_int_nic $wired_int_nic">>$interfaces_file
-	echo "address $intstaticip">>$interfaces_file
-	echo "broadcast $intnetbroadcast">>$interfaces_file
-	echo "netmask $intnetmask">>$interfaces_file
+	if [ $ubuntu -eq 1 ];
+	then
+		echo "network:">$interfaces_file
+  		echo "  version: 2"">$interfaces_file
+  		echo "  renderer: networkd">$interfaces_file
+  		echo "  ethernets:">$interfaces_file
+    		echo "    eth0:">$interfaces_file
+      		echo "      dhcp4: true">$interfaces_file
+      		echo "      dhcp6: true">$interfaces_file
+      		echo "      optional: true">$interfaces_file
+    		echo "    eth1:">$interfaces_file
+      		echo "      dhcp4: false">$interfaces_file
+      		echo "      dhcp6: false">$interfaces_file
+      		echo "      optional: true">$interfaces_file
+    		echo "    wlan0:">$interfaces_file
+      		echo "      dhcp4: false">$interfaces_file
+      		echo "      dhcp6: false">$interfaces_file
+      		echo "      optional: true">$interfaces_file
+  		echo "  bridges:">$interfaces_file
+    		echo "    br0:">$interfaces_file
+    		echo "    #dhcp4: false
+      		echo "      interfaces: [$wired_int_nic, $wlan_int_nic]">$interfaces_file
+     		echo "      addresses: [$intstaticip/24]">$interfaces_file
+      		echo"       #gateway4: 192.168.10.1">$interfaces_file
+      		echo"       nameservers:">$interfaces_file
+        	echo"         addresses: [8.8.8.8,8.8.4.4]">$interfaces_file
+      		echo"       dhcp4: no">$interfaces_file
+      		echo"       dhcp6: no">$interfaces_file
+		
+	else
+		echo "auto lo">>$interfaces_file
+		echo "iface lo inet loopback">>$interfaces_file	
+
+		echo "iface $wlan_int_nic inet manual">>$interfaces_file
+		echo "iface $wired_int_nic inet manual">>$interfaces_file
+
+		echo "auto br0">>$interfaces_file	
+		echo "iface br0 inet static">>$interfaces_file
+		echo "bridge_ports $wlan_int_nic $wired_int_nic">>$interfaces_file
+		echo "address $intstaticip">>$interfaces_file
+		echo "broadcast $intnetbroadcast">>$interfaces_file
+		echo "netmask $intnetmask">>$interfaces_file
+	fi	
 	
 	
 	#ifup --no-act br0
