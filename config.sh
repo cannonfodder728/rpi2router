@@ -11,6 +11,10 @@ rm -f $logfile
 now=$(date +"%m_%d_%Y_%H_%M_%S")
 ubuntu=0
 count=0
+wired_ext_nic=" "
+wlan_int_nic=" "
+wired_int_nic=" "
+
 if ! [ $(id -u) = 0 ]; then
    echo "Please execute as root!"
    exit 1
@@ -193,6 +197,21 @@ function createStartupService ()
 
 	#Create Startup script
 	touch startup_script
+	#echo "wired_ext_nic="eth0"
+	#sudo date > /home/ubuntu/disk_space_report.txt
+	#sudo du -sh /home/ >> /home/ubuntu/disk_space_report.txt
+
+	echo "iptables -F">>$startup_script
+        echo "iptables -t nat -A POSTROUTING -o $wired_ext_nic -j MASQUERADE">>$startup_script
+        echo "iptables -A FORWARD -i $wired_ext_nic -o br0 -m state --state RELATED,ESTABLISHED -j ACCEPT">>$startup_script
+        echo "iptables -A FORWARD -i br0 -o $wired_ext_nic -j ACCEPT">>$startup_script">>$startup_script
+        echo "iptables -A OUTPUT -p tcp --tcp-flags ALL ALL -j DROP">>$startup_script">>$startup_script
+        echo "iptables -A OUTPUT -p tcp --tcp-flags ALL ACK,RST,SYN,FIN -j DROP">>$startup_script
+        echo "iptables -A OUTPUT -p tcp --tcp-flags SYN,FIN SYN,FIN -j DROP">>$startup_script
+        echo "iptables -A OUTPUT -p tcp --tcp-flags SYN,RST SYN,RST -j DROP">>$startup_script
+        echo "iptables -A OUTPUT -p tcp --tcp-flags ALL NONE -j DROP">>$startup_script
+        echo "iptables -A INPUT -i $wired_ext_nic -p icmp --icmp-type echo-request -j DROP">>$startup_script
+	
 	chmod +x startup_script
 	
 	
