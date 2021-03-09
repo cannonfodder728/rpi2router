@@ -87,12 +87,12 @@ echo "$now installing needed tools" | tee -a $logfile
 #if lsb_release -a | grep -iq 'ubuntu'; then
         if (whiptail --title "Are you running Ubuntu on your Pi" --yesno "Running Ubuntu on Pi?" 8 78); then
                 echo "installing ubuntu tools" | tee -a $logfile
-                apt-get -y install debconf htop bc dksm git net-tools libssl-dev  bison screen iperf libnl-route-3-200 libncurses5-dev lshw bridge-utils  libssl-dev file build-essential curl usbutils iptables nano wireless-tools 
+                apt-get -y install debconf htop bc dkms git net-tools libssl-dev  bison screen iperf libnl-route-3-200 libncurses5-dev lshw bridge-utils  libssl-dev file build-essential curl usbutils iptables nano wireless-tools 
 		interfaces_file=$(ls /etc/netplan)
 		
 	else
                 echo "installing raspbian tools" | tee -a $logfile
-                apt-get -y install debconf htop bc dksm git net-tools libssl-dev  bison screen iperf libnl-route-3-200 libncurses5-dev lshw bridge-utils  libssl-dev file build-essential curl usbutils iptables nano wireless-tools
+                apt-get -y install debconf htop bc dkms git net-tools libssl-dev  bison screen iperf libnl-route-3-200 libncurses5-dev lshw bridge-utils  libssl-dev file build-essential curl usbutils iptables nano wireless-tools
 	fi
 #fi
 exitCode "Install Raspberry Pi Config tools"
